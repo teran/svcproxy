@@ -1,6 +1,6 @@
-export GOPATH := $(PWD)
+# export GOPATH := $(PWD)
 export GOBIN := $(GOPATH)/bin
-export PACKAGES := $(shell env GOPATH=$(GOPATH) go list ./src/svcproxy/...)
+export PACKAGES := $(shell env GOPATH=$(GOPATH) go list ./...)
 export REVISION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') || git rev-parse --verify --short HEAD || echo ${REVISION})
 
 all: clean predependencies dependencies build
@@ -49,7 +49,7 @@ sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-windows-i386.exe.sig 		bin/svcproxy-windows-i386.exe
 
 test:
-	go test ./src/...
+	go test ./...
 
 verify:
 	gpg --verify bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64
