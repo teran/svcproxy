@@ -1,6 +1,0 @@
-package: github.com/teran/svcproxy
-import:
-- package: github.com/stretchr/testify
-  version: master
-- package: golang.org/x/crypto/acme
-  version: master
