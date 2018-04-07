@@ -72,17 +72,20 @@ func main() {
 		log.Fatalf("Error while sending ping to database: %s", err)
 	}
 
+	// Initialize caching subsystem
 	cache, err := sqlcache.NewCache(db, []byte(cfg.Autocert.Cache.BackendOptions["encryptionKey"]))
 	if err != nil {
 		log.Fatalf("Error initializing autocert cache: %s", err)
 	}
 
+	// Initialize autocert
 	acm := &autocert.Manager{
 		Cache:      cache,
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(hostsList...),
 	}
 
+	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
 		Handler: acm.HTTPHandler(svc),
@@ -91,6 +94,7 @@ func main() {
 		log.Fatalf("Error listening HTTP socket: %s", httpSvc.ListenAndServe())
 	}()
 
+	// Configure TLS
 	tlsconf := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		CipherSuites: []uint16{
@@ -114,6 +118,7 @@ func main() {
 		PreferServerCipherSuites: true,
 	}
 
+	// Run HTTPS listener
 	httpsSvc := &http.Server{
 		Addr:      cfg.Listener.HTTPSAddr,
 		TLSConfig: tlsconf,
