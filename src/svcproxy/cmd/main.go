@@ -1,8 +1,11 @@
 package main
 
 import (
-	"fmt"
-	// svc "svcproxy/service"
+	"log"
+	"net/http"
+	"net/url"
+
+	"svcproxy/service"
 )
 
 type config struct {
@@ -14,5 +17,25 @@ type config struct {
 var Version = "dev"
 
 func main() {
-	fmt.Printf("Running svcproxy=%s\n", Version)
+	frontend := "localhost"
+	backend, err := url.Parse("http://ya.ru")
+	if err != nil {
+		log.Fatalf("Error parsing url: %s", err)
+	}
+
+	svc, err := service.NewService()
+	if err != nil {
+		log.Fatalf("Error creating service: %s", err)
+	}
+
+	svc.AddProxy(&service.Proxy{
+		Frontend: &service.Frontend{
+			FQDN: frontend,
+		},
+		Backend: &service.Backend{
+			URL: backend,
+		},
+	})
+
+	http.ListenAndServe(":8080", svc)
 }
