@@ -24,11 +24,16 @@ func (s *ServiceTestSuite) TestConfig() {
     - frontend:
         fqdn: myservice.local
       backend:
-        url: http://google.com`)
+        url: http://example.com`)
 
 	cfg, err := parse(configSample)
 	s.Require().NoError(err)
-
+	s.Equal(":80", cfg.Listener.HTTPAddr)
+	s.Equal(":443", cfg.Listener.HTTPSAddr)
+	s.Equal("sql", cfg.AutoCert.Cache.Backend)
+	s.Equal("root:passwd@tcp(127.0.0.1)/svcproxy", cfg.AutoCert.Cache.BackendOptions["dsn"])
+	s.Equal("myservice.local", cfg.Services[0].Frontend.FQDN)
+	s.Equal("http://example.com", cfg.Services[0].Backend.URL)
 }
 
 func (s *ServiceTestSuite) SetupTest() {
