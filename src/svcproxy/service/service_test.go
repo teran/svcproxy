@@ -1,6 +1,8 @@
 package service
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -12,7 +14,11 @@ type ServiceTestSuite struct {
 }
 
 func (s *ServiceTestSuite) TestService() {
-	u, err := url.Parse("http://example.com")
+	testsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("PONG"))
+	}))
+
+	u, err := url.Parse(testsrv.URL)
 	s.Require().NoError(err)
 
 	svc, err := NewService()

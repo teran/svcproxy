@@ -4,23 +4,24 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 
+	"svcproxy/config"
 	"svcproxy/service"
 )
-
-type config struct {
-	HTTPAddr  string `default:":80"`
-	HTTPSAddr string `default:":443"`
-}
 
 // Version to be filled by ldflags
 var Version = "dev"
 
 func main() {
-	frontend := "localhost"
-	backend, err := url.Parse("http://localhost:8081")
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "/etc/svcproxy/services.yaml"
+	}
+
+	cfg, err := config.Parse(configPath)
 	if err != nil {
-		log.Fatalf("Error parsing url: %s", err)
+		log.Fatalf("Error parsing configuration: %s", err)
 	}
 
 	svc, err := service.NewService()
@@ -28,14 +29,21 @@ func main() {
 		log.Fatalf("Error creating service: %s", err)
 	}
 
-	svc.AddProxy(&service.Proxy{
-		Frontend: &service.Frontend{
-			FQDN: frontend,
-		},
-		Backend: &service.Backend{
-			URL: backend,
-		},
-	})
+	for service := range cfg.Services {
+		backend, err := url.Parse(service.Backend.URL)
+		if err != nil {
+			log.Fatalf("Error parsing url: %s", err)
+		}
+
+		svc.AddProxy(&service.Proxy{
+			Frontend: &service.Frontend{
+				FQDN: frontend,
+			},
+			Backend: &service.Backend{
+				URL: backend,
+			},
+		})
+	}
 
 	http.ListenAndServe(":8080", svc)
 }
