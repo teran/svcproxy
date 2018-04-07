@@ -9,6 +9,7 @@ type PostgreSQL struct {
 	DB *sql.DB
 }
 
+// Get serves to retrieve cached data from MySQL database
 func (m *PostgreSQL) Get(key string) ([]byte, error) {
 	var value []byte
 
@@ -28,6 +29,7 @@ func (m *PostgreSQL) Get(key string) ([]byte, error) {
 	return value, nil
 }
 
+// Put serves to place data to PostgreSQL database as cache
 func (m *PostgreSQL) Put(key string, data []byte) error {
 	_, err := m.DB.Exec(`
 		INSERT INTO
@@ -44,6 +46,7 @@ func (m *PostgreSQL) Put(key string, data []byte) error {
 	return err
 }
 
+// Delete serves to delete data from MySQL database
 func (m *PostgreSQL) Delete(key string) error {
 	_, err := m.DB.Exec(`
 		DELETE FROM

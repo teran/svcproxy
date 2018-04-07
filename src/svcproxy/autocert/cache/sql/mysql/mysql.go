@@ -9,6 +9,7 @@ type MySQL struct {
 	DB *sql.DB
 }
 
+// Get serves to retrieve cached data from MySQL database
 func (m *MySQL) Get(key string) ([]byte, error) {
 	var value []byte
 
@@ -28,6 +29,7 @@ func (m *MySQL) Get(key string) ([]byte, error) {
 	return value, nil
 }
 
+// Put serves to place data to MySQL database as cache
 func (m *MySQL) Put(key string, data []byte) error {
 	_, err := m.DB.Exec(`
 		INSERT INTO
@@ -45,6 +47,7 @@ func (m *MySQL) Put(key string, data []byte) error {
 	return err
 }
 
+// Delete serves to delete data from MySQL database
 func (m *MySQL) Delete(key string) error {
 	_, err := m.DB.Exec(`
 		DELETE FROM
