@@ -15,8 +15,13 @@ type ServiceTestSuite struct {
 
 func (s *ServiceTestSuite) TestService() {
 	testsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("PONG"))
+		s.Equal("svcproxy", r.Header.Get("X-Proxy-App"))
+		s.Equal("/blah", r.URL.Path)
+		s.Equal("POST", r.Method)
+
+		w.WriteHeader(http.StatusNoContent)
 	}))
+	defer testsrv.Close()
 
 	u, err := url.Parse(testsrv.URL)
 	s.Require().NoError(err)
@@ -32,6 +37,17 @@ func (s *ServiceTestSuite) TestService() {
 			URL: u,
 		},
 	})
+
+	r, err := http.NewRequest("POST", "http://test.local/blah", nil)
+	s.Require().NoError(err)
+
+	w := httptest.NewRecorder()
+
+	svc.ServeHTTP(w, r)
+
+	result := w.Result()
+
+	s.Equal(http.StatusNoContent, result.StatusCode)
 }
 
 func (s *ServiceTestSuite) SetupTest() {

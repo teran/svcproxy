@@ -63,6 +63,7 @@ func NewReverseProxy(p *Proxy) *httputil.ReverseProxy {
 		r.Header.Set("X-Forwarded-For", remoteIP)
 		r.Header.Set("X-Real-IP", remoteIP)
 		r.Header.Set("X-Forwarded-Proto", "https")
+		r.Header.Set("X-Proxy-App", "svcproxy")
 	}
 
 	return &httputil.ReverseProxy{Director: director}
