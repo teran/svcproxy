@@ -18,7 +18,7 @@ var Version = "dev"
 
 func main() {
 	frontend := "localhost"
-	backend, err := url.Parse("http://ya.ru")
+	backend, err := url.Parse("http://localhost:8081")
 	if err != nil {
 		log.Fatalf("Error parsing url: %s", err)
 	}
