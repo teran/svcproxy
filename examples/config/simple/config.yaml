@@ -1,0 +1,14 @@
+---
+listener:
+  httpAddr: :8080
+  httpsAddr: :8443
+autocert:
+  cache:
+    backend: sql
+    backendOptions:
+      dsn: root:passwd@tcp(127.0.0.1)/svcproxy
+services:
+  - frontend:
+      fqdn: myservice.local
+    backend:
+      url: http://example.com

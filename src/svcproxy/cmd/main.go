@@ -45,5 +45,15 @@ func main() {
 		})
 	}
 
-	http.ListenAndServe(":8080", svc)
+	httpSvc := &http.Server{
+		Addr:    cfg.Listener.HTTPAddr,
+		Handler: svc,
+	}
+	httpsSvc := &http.Server{
+		Addr:    cfg.Listener.HTTPSAddr,
+		Handler: svc,
+	}
+
+	go func() { log.Fatal(httpSvc.ListenAndServe()) }()
+	log.Fatal(httpsSvc.ListenAndServe())
 }
