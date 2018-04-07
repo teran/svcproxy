@@ -10,6 +10,7 @@ import (
 
 	sqlcache "svcproxy/autocert/cache/sql"
 	"svcproxy/config"
+	"svcproxy/middleware/logging"
 	"svcproxy/service"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -88,7 +89,7 @@ func main() {
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
-		Handler: acm.HTTPHandler(svc),
+		Handler: logging.Middleware(acm.HTTPHandler(svc)),
 	}
 	go func() {
 		log.Fatalf("Error listening HTTP socket: %s", httpSvc.ListenAndServe())
@@ -122,7 +123,7 @@ func main() {
 	httpsSvc := &http.Server{
 		Addr:      cfg.Listener.HTTPSAddr,
 		TLSConfig: tlsconf,
-		Handler:   svc,
+		Handler:   logging.Middleware(svc),
 	}
 	log.Fatalf("Error listening HTTPS socket: %s", httpsSvc.ListenAndServeTLS("", ""))
 }
