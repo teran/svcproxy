@@ -19,7 +19,7 @@ func main() {
 		configPath = "/etc/svcproxy/services.yaml"
 	}
 
-	cfg, err := config.Parse(configPath)
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("Error parsing configuration: %s", err)
 	}
@@ -29,15 +29,15 @@ func main() {
 		log.Fatalf("Error creating service: %s", err)
 	}
 
-	for service := range cfg.Services {
-		backend, err := url.Parse(service.Backend.URL)
+	for _, sd := range cfg.Services {
+		backend, err := url.Parse(sd.Backend.URL)
 		if err != nil {
 			log.Fatalf("Error parsing url: %s", err)
 		}
 
 		svc.AddProxy(&service.Proxy{
 			Frontend: &service.Frontend{
-				FQDN: frontend,
+				FQDN: sd.Frontend.FQDN,
 			},
 			Backend: &service.Backend{
 				URL: backend,

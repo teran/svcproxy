@@ -10,12 +10,21 @@ import (
 type Config struct {
 	Listener Listener  `yaml:"listener"`
 	Services []Service `yaml:"services"`
+	AutoCert AutoCert  `yaml:"autocert"`
+}
+
+// AutoCert configuration
+type AutoCert struct {
+	Cache struct {
+		Backend        string            `yaml:"backend"`
+		BackendOptions map[string]string `yaml:"backendOptions"`
+	} `yaml:"cache"`
 }
 
 // Listener section of the configuration
 type Listener struct {
-	HTTPAddr  string `yaml:"httpaddr" default:":80"`
-	HTTPSAddr string `yaml:"httpsaddr" default:":443"`
+	HTTPAddr  string `yaml:"httpAddr" default:":80"`
+	HTTPSAddr string `yaml:"httpsAddr" default:":443"`
 }
 
 // Service section of the configuration
@@ -28,16 +37,28 @@ type Service struct {
 	} `yaml:"backend"`
 }
 
-// Parse reads YAML configuration file and returns Config
-func Parse(path string) (*Config, error) {
+// Load reads YAML configuration file and returns Config
+func Load(path string) (*Config, error) {
+	spec, err := read(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return parse(spec)
+}
+
+func read(path string) ([]byte, error) {
 	spec, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	var config Config
+	return spec, nil
+}
 
-	err = yaml.UnmarshalStrict(spec, &config)
+func parse(spec []byte) (*Config, error) {
+	var config Config
+	err := yaml.UnmarshalStrict(spec, &config)
 	if err != nil {
 		return nil, err
 	}
