@@ -3,7 +3,7 @@ export GOBIN := $(GOPATH)/bin
 export PACKAGES := $(shell env GOPATH=$(GOPATH) go list ./src/...)
 export REVISION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') || git rev-parse --verify --short HEAD || echo ${REVISION})
 
-all: clean predependencies dependencies build
+all: clean dependencies test build
 
 clean:
 	rm -vf bin/*
