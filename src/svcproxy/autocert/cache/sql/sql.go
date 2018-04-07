@@ -10,10 +10,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"reflect"
 
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/crypto/pbkdf2"
-
 	"svcproxy/autocert/cache/sql/mysql"
 	"svcproxy/autocert/cache/sql/postgresql"
 )
@@ -40,15 +40,17 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 
 	var driver Driver
 
-	switch db.Driver().Name() {
-	case "mysql":
+	switch fmt.Sprintf("Driver: %s", reflect.TypeOf(db.Driver())) {
+	case "Driver: *mysql.MySQLDriver":
 		driver = &mysql.MySQL{
-			db: db,
+			DB: db,
 		}
-	case "postgresql":
+	case "Driver: *pq.Driver":
 		driver = &postgresql.PostgreSQL{
-			db: db,
+			DB: db,
 		}
+	default:
+		return nil, fmt.Errorf("Unsupported driver")
 	}
 
 	return &Cache{
@@ -59,7 +61,7 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 
 // Get retrieves certificate data from cache
 func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
-	data, err := driver.Get(key)
+	data, err := m.driver.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +81,12 @@ func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
 		return err
 	}
 
-	return driver.Put(key, encryptedData)
+	return m.driver.Put(key, encryptedData)
 }
 
 // Delete removes certificate data from cache
 func (m *Cache) Delete(ctx context.Context, key string) error {
-	return driver.Delete(key)
+	return m.driver.Delete(key)
 }
 
 func (m *Cache) decrypt(ciphertext []byte) ([]byte, error) {

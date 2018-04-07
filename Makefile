@@ -35,10 +35,7 @@ build-windows-i386:
 	GOOS=windows GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/svcproxy-windows-i386.exe svcproxy/cmd
 
 dependencies:
-	cd src && trash
-
-predependencies:
-	go get -u github.com/rancher/trash
+	cd src/svcproxy && dep ensure
 
 sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64

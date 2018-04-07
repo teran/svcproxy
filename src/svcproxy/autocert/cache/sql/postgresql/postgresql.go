@@ -6,13 +6,13 @@ import (
 
 // PostgreSQL database driver abstraction
 type PostgreSQL struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (m *PostgreSQL) Get(key string) ([]byte, error) {
 	var value []byte
 
-	err := m.db.QueryRow(`
+	err := m.DB.QueryRow(`
 		SELECT
 			cache_value
 		FROM
@@ -29,24 +29,23 @@ func (m *PostgreSQL) Get(key string) ([]byte, error) {
 }
 
 func (m *PostgreSQL) Put(key string, data []byte) error {
-	_, err := m.db.Exec(`
+	_, err := m.DB.Exec(`
 		INSERT INTO
 			autocert_cache
 			(cache_key, cache_value)
 		VALUES
 			($1, $2)
-		ON
-			DUPLICATE KEY
-		UPDATE
-			cache_key=VALUES(cache_key),
-			cache_value=VALUES(cache_value)
+		ON CONFLICT (cache_key) DO UPDATE
+		SET
+			cache_key = $1,
+			cache_value = $2
 	`, key, data)
 
 	return err
 }
 
 func (m *PostgreSQL) Delete(key string) error {
-	_, err := m.db.Exec(`
+	_, err := m.DB.Exec(`
 		DELETE FROM
 			autocert_cache
 		WHERE

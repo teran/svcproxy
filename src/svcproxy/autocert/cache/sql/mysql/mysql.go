@@ -6,13 +6,13 @@ import (
 
 // MySQL database driver abstraction
 type MySQL struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (m *MySQL) Get(key string) ([]byte, error) {
 	var value []byte
 
-	err := m.db.QueryRow(`
+	err := m.DB.QueryRow(`
 		SELECT
 			cache_value
 		FROM
@@ -29,7 +29,7 @@ func (m *MySQL) Get(key string) ([]byte, error) {
 }
 
 func (m *MySQL) Put(key string, data []byte) error {
-	_, err := m.db.Exec(`
+	_, err := m.DB.Exec(`
 		INSERT INTO
 			autocert_cache
 			(cache_key, cache_value)
@@ -46,7 +46,7 @@ func (m *MySQL) Put(key string, data []byte) error {
 }
 
 func (m *MySQL) Delete(key string) error {
-	_, err := m.db.Exec(`
+	_, err := m.DB.Exec(`
 		DELETE FROM
 			autocert_cache
 		WHERE
