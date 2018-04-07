@@ -8,6 +8,7 @@ import (
 )
 
 var _ Service = &Svc{}
+var _ http.Handler = &Svc{}
 
 // Svc implement service
 type Svc struct {
