@@ -37,6 +37,12 @@ build-windows-i386:
 dependencies:
 	cd src/svcproxy && dep ensure
 
+docker:
+	docker build . -t svcproxy
+
+predependecies:
+	go get -u github.com/golang/dep/cmd/dep
+
 sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-darwin-i386.sig 				bin/svcproxy-darwin-i386
