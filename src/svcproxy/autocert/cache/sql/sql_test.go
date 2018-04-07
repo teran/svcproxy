@@ -1,4 +1,4 @@
-package cache
+package sql
 
 import (
 	"context"
@@ -11,14 +11,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type SQLCacheTestSuite struct {
+type CacheTestSuite struct {
 	suite.Suite
 	db *sql.DB
 }
 
-func (s *SQLCacheTestSuite) TestMySQLCache() {
+func (s *CacheTestSuite) TestMyCache() {
 	dataSample := []byte("test-byte")
-	c, err := NewSQLCache(s.db, []byte("testKey"))
+	c, err := NewCache(s.db, []byte("testKey"))
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -34,13 +34,13 @@ func (s *SQLCacheTestSuite) TestMySQLCache() {
 	s.Require().NoError(err)
 }
 
-func (s *SQLCacheTestSuite) SetupTest() {
+func (s *CacheTestSuite) SetupTest() {
 	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
 	s.Require().NoError(err)
 	s.Require().NotNil(db)
 	s.db = db
 }
 
-func TestMySQLCacheTestSuite(t *testing.T) {
-	suite.Run(t, new(SQLCacheTestSuite))
+func TestMyCacheTestSuite(t *testing.T) {
+	suite.Run(t, new(CacheTestSuite))
 }

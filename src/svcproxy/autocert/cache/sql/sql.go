@@ -1,4 +1,4 @@
-package cache
+package sql
 
 import (
 	"context"
@@ -13,46 +13,58 @@ import (
 
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/crypto/pbkdf2"
+
+	"svcproxy/autocert/cache/sql/mysql"
+	"svcproxy/autocert/cache/sql/postgresql"
 )
 
-var _ autocert.Cache = &SQLCache{}
+var _ autocert.Cache = &Cache{}
 
-// SQLCache implements autocert.Cache with MySQL database
-type SQLCache struct {
-	db            *sql.DB
+type Driver interface {
+	Get(key string) ([]byte, error)
+	Put(key string, data []byte) error
+	Delete(key string) error
+}
+
+// Cache implements autocert.Cache with MySQL database
+type Cache struct {
+	driver        Driver
 	encryptionKey []byte
 }
 
-// NewSQLCache returns SQLCache instance
-func NewSQLCache(db *sql.DB, encryptionKey []byte) (*SQLCache, error) {
+// NewCache returns Cache instance
+func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 	h := sha256.New()
 	h.Write(encryptionKey)
 	key := h.Sum(nil)
 
-	return &SQLCache{
-		db:            db,
+	var driver Driver
+
+	switch db.Driver().Name() {
+	case "mysql":
+		driver = &mysql.MySQL{
+			db: db,
+		}
+	case "postgresql":
+		driver = &postgresql.PostgreSQL{
+			db: db,
+		}
+	}
+
+	return &Cache{
+		driver:        driver,
 		encryptionKey: pbkdf2.Key(key[:15], key[16:32], 1048, 32, sha256.New),
 	}, nil
 }
 
 // Get retrieves certificate data from cache
-func (m *SQLCache) Get(ctx context.Context, key string) ([]byte, error) {
-	var value []byte
-
-	err := m.db.QueryRow(`
-		SELECT
-			cache_value
-		FROM
-			autocert_cache
-		WHERE
-			cache_key = ?
-		LIMIT 1
-	`, key).Scan(&value)
+func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
+	data, err := driver.Get(key)
 	if err != nil {
 		return nil, err
 	}
 
-	decryptedData, err := m.decrypt(value)
+	decryptedData, err := m.decrypt(data)
 	if err != nil {
 		return nil, err
 	}
@@ -61,40 +73,21 @@ func (m *SQLCache) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 // Put stores certificate data to cache
-func (m *SQLCache) Put(ctx context.Context, key string, data []byte) error {
+func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
 	encryptedData, err := m.encrypt(data)
 	if err != nil {
 		return err
 	}
 
-	_, err = m.db.Exec(`
-		INSERT INTO
-			autocert_cache
-			(cache_key, cache_value)
-		VALUES
-			(?, ?)
-		ON
-			DUPLICATE KEY
-		UPDATE
-			cache_key=VALUES(cache_key),
-			cache_value=VALUES(cache_value)
-	`, key, encryptedData)
-
-	return err
+	return driver.Put(key, encryptedData)
 }
 
 // Delete removes certificate data from cache
-func (m *SQLCache) Delete(ctx context.Context, key string) error {
-	_, err := m.db.Exec(`
-		DELETE FROM
-			autocert_cache
-		WHERE
-			cache_key = ?
-	`, key)
-	return err
+func (m *Cache) Delete(ctx context.Context, key string) error {
+	return driver.Delete(key)
 }
 
-func (m *SQLCache) decrypt(ciphertext []byte) ([]byte, error) {
+func (m *Cache) decrypt(ciphertext []byte) ([]byte, error) {
 	ct := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertext)))
 	l, err := base64.StdEncoding.Decode(ct, ciphertext)
 	if err != nil {
@@ -121,7 +114,7 @@ func (m *SQLCache) decrypt(ciphertext []byte) ([]byte, error) {
 	return ciphertext, err
 }
 
-func (m *SQLCache) encrypt(plaintext []byte) ([]byte, error) {
+func (m *Cache) encrypt(plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(m.encryptionKey)
 	if err != nil {
 		return nil, err
