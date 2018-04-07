@@ -19,7 +19,7 @@ func (s *ServiceTestSuite) TestConfig() {
     cache:
       backend: sql
       backendOptions:
-        dsn: root:passwd@tcp(127.0.0.1)/svcproxy
+        dsn: root:passwd@tcp(127.0.0.1:3306)/svcproxy
   services:
     - frontend:
         fqdn: myservice.local
@@ -30,8 +30,8 @@ func (s *ServiceTestSuite) TestConfig() {
 	s.Require().NoError(err)
 	s.Equal(":80", cfg.Listener.HTTPAddr)
 	s.Equal(":443", cfg.Listener.HTTPSAddr)
-	s.Equal("sql", cfg.AutoCert.Cache.Backend)
-	s.Equal("root:passwd@tcp(127.0.0.1)/svcproxy", cfg.AutoCert.Cache.BackendOptions["dsn"])
+	s.Equal("sql", cfg.Autocert.Cache.Backend)
+	s.Equal("root:passwd@tcp(127.0.0.1:3306)/svcproxy", cfg.Autocert.Cache.BackendOptions["dsn"])
 	s.Equal("myservice.local", cfg.Services[0].Frontend.FQDN)
 	s.Equal("http://example.com", cfg.Services[0].Backend.URL)
 }

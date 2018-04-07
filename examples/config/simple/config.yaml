@@ -6,7 +6,8 @@ autocert:
   cache:
     backend: sql
     backendOptions:
-      dsn: root:passwd@tcp(127.0.0.1)/svcproxy
+      dsn: root@tcp(127.0.0.1:3306)/svcproxy
+      encryptionKey: testkey
 services:
   - frontend:
       fqdn: myservice.local

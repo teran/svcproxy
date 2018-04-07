@@ -10,11 +10,11 @@ import (
 type Config struct {
 	Listener Listener  `yaml:"listener"`
 	Services []Service `yaml:"services"`
-	AutoCert AutoCert  `yaml:"autocert"`
+	Autocert Autocert  `yaml:"autocert"`
 }
 
-// AutoCert configuration
-type AutoCert struct {
+// Autocert configuration
+type Autocert struct {
 	Cache struct {
 		Backend        string            `yaml:"backend"`
 		BackendOptions map[string]string `yaml:"backendOptions"`
