@@ -14,11 +14,5 @@ before_install:
   - psql -c 'create database svcproxy;' -U postgres
   - psql svcproxy < src/svcproxy/autocert/cache/sql/sql_migration.sql
 
-python:
-  - 3.6
-
-install:
-    - pip install tox
-
 script:
-    - tox -v
+    - make predependencies dependencies test build-linux-amd64
