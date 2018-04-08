@@ -57,4 +57,4 @@ docker pull teran/svcproxy
  - [ ] Redirect from HTTP to HTTPS(configurable)
  - [ ] HTTPS-only service
  - [ ] Authentication(?)
- - [ ] Fix cache tests
+ - [X] Fix cache tests
