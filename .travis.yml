@@ -1,0 +1,24 @@
+dist: xenial
+language: go
+
+services:
+  - postgresql
+  - mysql
+
+addons:
+  postgresql: "9.6"
+
+before_install:
+  - mysql -e 'CREATE DATABASE svcproxy;'
+  - mysql < src/svcproxy/autocert/cache/sql/sql_migration.sql
+  - psql -c 'create database svcproxy;' -U postgres
+  - psql < src/svcproxy/autocert/cache/sql/sql_migration.sql
+
+python:
+  - 3.6
+
+install:
+    - pip install tox
+
+script:
+    - tox -v
