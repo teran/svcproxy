@@ -40,7 +40,7 @@ dependencies:
 docker:
 	docker build . -t svcproxy
 
-predependecies:
+predependencies:
 	go get -u github.com/golang/dep/cmd/dep
 
 sign:
