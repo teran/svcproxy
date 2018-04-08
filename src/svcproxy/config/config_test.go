@@ -1,6 +1,7 @@
 package config
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -11,29 +12,18 @@ type ServiceTestSuite struct {
 }
 
 func (s *ServiceTestSuite) TestConfig() {
-	configSample := []byte(`---
-  listener:
-    httpAddr: :80
-    httpsAddr: :443
-  autocert:
-    cache:
-      backend: sql
-      backendOptions:
-        dsn: root:passwd@tcp(127.0.0.1:3306)/svcproxy
-  services:
-    - frontend:
-        fqdn: myservice.local
-      backend:
-        url: http://example.com`)
+	configSample, err := ioutil.ReadFile("../../../examples/config/simple/config.yaml")
+	s.Require().NoError(err)
 
 	cfg, err := parse(configSample)
 	s.Require().NoError(err)
-	s.Equal(":80", cfg.Listener.HTTPAddr)
-	s.Equal(":443", cfg.Listener.HTTPSAddr)
+	s.Equal(":8080", cfg.Listener.HTTPAddr)
+	s.Equal(":8443", cfg.Listener.HTTPSAddr)
 	s.Equal("sql", cfg.Autocert.Cache.Backend)
-	s.Equal("root:passwd@tcp(127.0.0.1:3306)/svcproxy", cfg.Autocert.Cache.BackendOptions["dsn"])
+	s.Equal("mysql", cfg.Autocert.Cache.BackendOptions["driver"])
+	s.Equal("root@tcp(127.0.0.1:3306)/svcproxy", cfg.Autocert.Cache.BackendOptions["dsn"])
 	s.Equal("myservice.local", cfg.Services[0].Frontend.FQDN)
-	s.Equal("http://example.com", cfg.Services[0].Backend.URL)
+	s.Equal("http://localhost:8082", cfg.Services[0].Backend.URL)
 }
 
 func (s *ServiceTestSuite) SetupTest() {
