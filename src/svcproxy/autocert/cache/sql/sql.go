@@ -64,6 +64,10 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 	data, err := m.driver.Get(key)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			// TODO: add test for ErrCacheMiss
+			return nil, autocert.ErrCacheMiss
+		}
 		return nil, err
 	}
 
