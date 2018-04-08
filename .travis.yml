@@ -17,4 +17,4 @@ before_install:
   - psql svcproxy < src/svcproxy/autocert/cache/sql/sql_migration.sql
 
 script:
-    - make predependencies dependencies test build-linux-amd64
+    - make test build-linux-amd64
