@@ -10,7 +10,7 @@ MAINTAINER Igor Shishkin <me@teran.ru>
 ARG VCS_REF
 
 LABEL org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="e.g. https://github.com/teran/svcproxy"
+      org.label-schema.vcs-url="https://github.com/teran/svcproxy"
 
 RUN apk add --update --no-cache \
   ca-certificates && \
