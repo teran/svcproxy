@@ -26,7 +26,7 @@ func main() {
 	// Grab path to configuration file and load it
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "/etc/svcproxy/services.yaml"
+		configPath = "/etc/svcproxy/svcproxy.yaml"
 	}
 
 	cfg, err := config.Load(configPath)
@@ -61,8 +61,6 @@ func main() {
 		hostsList = append(hostsList, sd.Frontend.FQDN)
 	}
 
-	log.Printf("Loaded hosts: %+s", hostsList)
-
 	// Initialize database for caching TLS certificates
 	db, err := sql.Open("mysql", cfg.Autocert.Cache.BackendOptions["dsn"])
 	if err != nil {
@@ -78,6 +76,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing autocert cache: %s", err)
 	}
+
+	log.Printf("Loaded hosts: %+s", hostsList)
 
 	// Initialize autocert
 	acm := &autocert.Manager{
