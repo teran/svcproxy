@@ -61,7 +61,7 @@ func main() {
 	}
 
 	// Initialize caching subsystem
-	cache, err := cache.NewCacheFactory(cfg.Autocert.Cache.BackendOptions)
+	cache, err := cache.NewCacheFactory(cfg.Autocert.Cache.Backend, cfg.Autocert.Cache.BackendOptions)
 	if err != nil {
 		log.Fatalf("Error initializing autocert cache: %s", err)
 	}
