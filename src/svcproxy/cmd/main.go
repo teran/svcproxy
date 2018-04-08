@@ -2,13 +2,12 @@ package main
 
 import (
 	"crypto/tls"
-	"database/sql"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 
-	sqlcache "svcproxy/autocert/cache/sql"
+	"svcproxy/autocert/cache"
 	"svcproxy/config"
 	"svcproxy/middleware/logging"
 	"svcproxy/service"
@@ -61,18 +60,8 @@ func main() {
 		hostsList = append(hostsList, sd.Frontend.FQDN)
 	}
 
-	// Initialize database for caching TLS certificates
-	db, err := sql.Open("mysql", cfg.Autocert.Cache.BackendOptions["dsn"])
-	if err != nil {
-		log.Fatalf("Error establising database connection: %s", err)
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Error while sending ping to database: %s", err)
-	}
-
 	// Initialize caching subsystem
-	cache, err := sqlcache.NewCache(db, []byte(cfg.Autocert.Cache.BackendOptions["encryptionKey"]))
+	cache, err := cache.NewCacheFactory(cfg.Autocert.Cache.BackendOptions)
 	if err != nil {
 		log.Fatalf("Error initializing autocert cache: %s", err)
 	}

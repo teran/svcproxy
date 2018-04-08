@@ -6,6 +6,7 @@ autocert:
   cache:
     backend: sql
     backendOptions:
+      driver: mysql
       dsn: root@tcp(127.0.0.1:3306)/svcproxy
       encryptionKey: testkey
 services:
