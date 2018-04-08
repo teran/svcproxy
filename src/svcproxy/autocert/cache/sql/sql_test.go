@@ -62,7 +62,7 @@ func (s *CacheTestSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.Require().NotNil(s.mysql)
 
-	s.postgresql, err = sql.Open("postgres", "postgres://postgres:password@localhost/svcproxy?sslmode=disable")
+	s.postgresql, err = sql.Open("postgres", "postgres://postgres@localhost/svcproxy?sslmode=disable")
 	s.Require().NoError(err)
 	s.Require().NotNil(s.postgresql)
 }
