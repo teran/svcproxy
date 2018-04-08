@@ -35,7 +35,12 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 			return nil, fmt.Errorf("Error contacting database: %s", e)
 		}
 
-		return sqlcache.NewCache(db, []byte(options["encryptionKey"]))
+		encryptionKey, ok := options["encryptionKey"]
+		if !ok || encryptionKey == "" {
+			return nil, fmt.Errorf("encryptionKey option to backend is required and cannot be empty")
+		}
+
+		return sqlcache.NewCache(db, []byte(encryptionKey))
 	}
 
 	return nil, fmt.Errorf("Unknown backend specified")
