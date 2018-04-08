@@ -25,3 +25,9 @@ services:
 
 Some options could be passed as Environment variables:
  * `CONFIG_PATH` - path to YAML configuration file in file system
+
+# TODO
+ - [ ] Redirect from HTTP to HTTPS(configurable)
+ - [ ] HTTPS-only service
+ - [ ] Authentication(?)
+ - [ ] Fix cache tests
