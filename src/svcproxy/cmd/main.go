@@ -19,6 +19,7 @@ import (
 var Version = "dev"
 
 func main() {
+	log.Printf("Launching svcproxy=%s ...", Version)
 	// Grab path to configuration file and load it
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
