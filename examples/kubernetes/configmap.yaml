@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  svcproxy.yaml: |-
+    ---
+    listener:
+      httpAddr: :80
+      httpsAddr: :443
+    autocert:
+      cache:
+        backend: sql
+        backendOptions:
+          dsn: svcproxy:svcproxy@tcp(mysql:3306)/svcproxy
+          encryptionKey: testkey
+    services:
+      - frontend:
+          fqdn: site.local
+        backend:
+          url: http://example.com
+
+metadata:
+  labels:
+    app: svcproxy
+  name: svcproxy

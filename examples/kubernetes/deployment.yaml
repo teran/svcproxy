@@ -1,0 +1,48 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: svcproxy
+  name: svcproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svcproxy
+  template:
+    metadata:
+      labels:
+        app: svcproxy
+    spec:
+      containers:
+      - image: teran/svcproxy:latest
+        imagePullPolicy: Always
+        name: svcproxy
+        env:
+        - name: CONFIG_PATH
+          value: /etc/svcproxy/svcproxy.yaml
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 100m
+            memory: 512Mi
+        volumeMounts:
+        - name: svcproxy
+          mountPath: /etc/svcproxy
+      volumes:
+      - name: svcproxy
+        configMap:
+          name: svcproxy
+          items:
+            - key: svcproxy.yaml
+              path: svcproxy.yaml
