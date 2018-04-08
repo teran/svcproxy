@@ -7,6 +7,11 @@ RUN make predependecies dependencies build-linux-amd64
 FROM alpine
 MAINTAINER Igor Shishkin <me@teran.ru>
 
+ARG VCS_REF
+
+LABEL org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="e.g. https://github.com/teran/svcproxy"
+
 RUN apk add --update --no-cache \
   ca-certificates && \
   rm -vf /var/cache/apk/*
