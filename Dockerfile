@@ -2,7 +2,7 @@ FROM golang
 MAINTAINER Igor Shishkin <me@teran.ru>
 
 ADD . /go
-RUN make predependecies dependencies build-linux-amd64
+RUN make build-linux-amd64
 
 FROM alpine
 MAINTAINER Igor Shishkin <me@teran.ru>
