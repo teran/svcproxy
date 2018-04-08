@@ -13,9 +13,6 @@ import (
 	"svcproxy/service"
 
 	"golang.org/x/crypto/acme/autocert"
-
-	// MySQL driver
-	_ "github.com/go-sql-driver/mysql"
 )
 
 // Version to be filled by ldflags
