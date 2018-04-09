@@ -21,15 +21,9 @@ import (
 
 var _ autocert.Cache = &Cache{}
 
-type Driver interface {
-	Get(key string) ([]byte, error)
-	Put(key string, data []byte) error
-	Delete(key string) error
-}
-
 // Cache implements autocert.Cache with MySQL database
 type Cache struct {
-	driver        Driver
+	driver        autocert.Cache
 	encryptionKey []byte
 }
 
@@ -39,7 +33,7 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 	h.Write(encryptionKey)
 	key := h.Sum(nil)
 
-	var driver Driver
+	var driver autocert.Cache
 
 	switch fmt.Sprintf("Driver: %s", reflect.TypeOf(db.Driver())) {
 	case "Driver: *mysql.MySQLDriver":
@@ -62,7 +56,7 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 
 // Get retrieves certificate data from cache
 func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
-	data, err := m.driver.Get(key)
+	data, err := m.driver.Get(ctx, key)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// TODO: add test for ErrCacheMiss
@@ -86,12 +80,12 @@ func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
 		return err
 	}
 
-	return m.driver.Put(key, encryptedData)
+	return m.driver.Put(ctx, key, encryptedData)
 }
 
 // Delete removes certificate data from cache
 func (m *Cache) Delete(ctx context.Context, key string) error {
-	return m.driver.Delete(key)
+	return m.driver.Delete(ctx, key)
 }
 
 func (m *Cache) decrypt(ciphertext []byte) ([]byte, error) {

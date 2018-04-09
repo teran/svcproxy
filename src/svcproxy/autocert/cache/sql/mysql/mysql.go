@@ -1,8 +1,13 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+
+	"golang.org/x/crypto/acme/autocert"
 )
+
+var _ autocert.Cache = &MySQL{}
 
 // MySQL database driver abstraction
 type MySQL struct {
@@ -10,7 +15,7 @@ type MySQL struct {
 }
 
 // Get serves to retrieve cached data from MySQL database
-func (m *MySQL) Get(key string) ([]byte, error) {
+func (m *MySQL) Get(ctx context.Context, key string) ([]byte, error) {
 	var value []byte
 
 	err := m.DB.QueryRow(`
@@ -30,7 +35,7 @@ func (m *MySQL) Get(key string) ([]byte, error) {
 }
 
 // Put serves to place data to MySQL database as cache
-func (m *MySQL) Put(key string, data []byte) error {
+func (m *MySQL) Put(ctx context.Context, key string, data []byte) error {
 	_, err := m.DB.Exec(`
 		INSERT INTO
 			autocert_cache
@@ -48,7 +53,7 @@ func (m *MySQL) Put(key string, data []byte) error {
 }
 
 // Delete serves to delete data from MySQL database
-func (m *MySQL) Delete(key string) error {
+func (m *MySQL) Delete(ctx context.Context, key string) error {
 	_, err := m.DB.Exec(`
 		DELETE FROM
 			autocert_cache
