@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"svcproxy/autocert/cache"
@@ -41,19 +40,24 @@ func main() {
 
 	// Fill service instance with proxies
 	for _, sd := range cfg.Services {
-		backend, err := url.Parse(sd.Backend.URL)
+		f, err := service.NewFrontend(sd.Frontend.FQDN, sd.Frontend.HTTPHandler, sd.Frontend.ResponseHTTPHeaders)
 		if err != nil {
-			log.Fatalf("Error parsing url: %s", err)
+			log.Printf("Error: unable to initialize frontend %s: %s", sd.Frontend.FQDN, err)
+			continue
 		}
 
-		svc.AddProxy(&service.Proxy{
-			Frontend: &service.Frontend{
-				FQDN: sd.Frontend.FQDN,
-			},
-			Backend: &service.Backend{
-				URL: backend,
-			},
-		})
+		b, err := service.NewBackend(sd.Backend.URL)
+		if err != nil {
+			log.Printf("Error: unable to initialize backend: %s: %s", sd.Frontend.FQDN, err)
+			continue
+		}
+
+		p, err := service.NewProxy(f, b)
+		if err != nil {
+			log.Printf("Error: unable to register proxy %s: %s", sd.Frontend.FQDN, err)
+			continue
+		}
+		svc.AddProxy(p)
 
 		hostsList = append(hostsList, sd.Frontend.FQDN)
 	}

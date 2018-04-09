@@ -24,6 +24,16 @@ services:
   - frontend:
       # FQDN service is gonna response by
       fqdn: myservice.local
+      # What svcproxy should do with requests on HTTP port
+      # avaialble options:
+      # - "proxy" to work on both of HTTP and HTTPS
+      # - "redirect" to redirect requests from HTTP to HTTPS
+      # - "reject" to reject any requests to HTTP(except ACME challenges) with 404
+      httpHandler: proxy
+      # HTTP Headers to send with response
+      # Usually usefull for HSTS, CORS, etc.
+      responseHTTPHeaders:
+        Strict-Transport-Security: "max-age=31536000"
     backend:
       # Service backend to handle requests behind proxy
       url: http://localhost:8082

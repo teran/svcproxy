@@ -3,7 +3,6 @@ package service
 import (
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -23,20 +22,19 @@ func (s *ServiceTestSuite) TestService() {
 	}))
 	defer testsrv.Close()
 
-	u, err := url.Parse(testsrv.URL)
-	s.Require().NoError(err)
-
 	svc, err := NewService()
 	s.Require().NoError(err)
 
-	svc.AddProxy(&Proxy{
-		Frontend: &Frontend{
-			FQDN: "test.local",
-		},
-		Backend: &Backend{
-			URL: u,
-		},
-	})
+	f, err := NewFrontend("test.local", "proxy", map[string]string{"X-Blah": "header-value"})
+	s.Require().NoError(err)
+
+	b, err := NewBackend(testsrv.URL)
+	s.Require().NoError(err)
+
+	p, err := NewProxy(f, b)
+	s.Require().NoError(err)
+
+	svc.AddProxy(p)
 
 	r, err := http.NewRequest("POST", "http://test.local/blah", nil)
 	s.Require().NoError(err)
@@ -46,12 +44,8 @@ func (s *ServiceTestSuite) TestService() {
 	svc.ServeHTTP(w, r)
 
 	result := w.Result()
-
 	s.Equal(http.StatusNoContent, result.StatusCode)
-}
-
-func (s *ServiceTestSuite) SetupTest() {
-
+	s.Equal("header-value", result.Header.Get("X-Blah"))
 }
 
 func TestMyServiceTestSuite(t *testing.T) {

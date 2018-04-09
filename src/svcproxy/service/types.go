@@ -1,6 +1,7 @@
 package service
 
 import (
+	"net/http/httputil"
 	"net/url"
 )
 
@@ -13,11 +14,14 @@ type Service interface {
 type Proxy struct {
 	Frontend *Frontend
 	Backend  *Backend
+	proxy    *httputil.ReverseProxy
 }
 
 // Frontend type
 type Frontend struct {
-	FQDN string
+	FQDN                string
+	HTTPHandler         string
+	ResponseHTTPHeaders map[string]string
 }
 
 // Backend type

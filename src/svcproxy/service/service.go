@@ -1,9 +1,7 @@
 package service
 
 import (
-	"net"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 )
 
@@ -12,19 +10,19 @@ var _ http.Handler = &Svc{}
 
 // Svc implement service
 type Svc struct {
-	proxies map[string]*httputil.ReverseProxy
+	proxies map[string]*Proxy
 }
 
 // NewService returns new service instance
 func NewService() (*Svc, error) {
 	return &Svc{
-		proxies: make(map[string]*httputil.ReverseProxy),
+		proxies: make(map[string]*Proxy),
 	}, nil
 }
 
 // AddProxy adds proxy to the service
 func (s *Svc) AddProxy(p *Proxy) error {
-	s.proxies[p.Frontend.FQDN] = NewReverseProxy(p)
+	s.proxies[p.Frontend.FQDN] = p
 	return nil
 }
 
@@ -35,38 +33,24 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.ServeHTTP(w, r)
-}
-
-// NewReverseProxy returns httputil.ReverseProxy object
-func NewReverseProxy(p *Proxy) *httputil.ReverseProxy {
-	director := func(r *http.Request) {
-		r.URL.Scheme = p.Backend.URL.Scheme
-		r.URL.Host = p.Backend.URL.Host
-		r.URL.Path = singleJoiningSlash(p.Backend.URL.Path, r.URL.Path)
-
-		if p.Backend.RewriteHost {
-			r.Host = p.Backend.URL.Host
+	// Handle plain HTTP requests
+	if r.TLS == nil {
+		switch p.Frontend.HTTPHandler {
+		case "reject":
+			http.NotFound(w, r)
+			return
+		case "redirect":
+			r.URL.Scheme = "https"
+			http.Redirect(w, r, r.URL.String(), http.StatusFound)
+			return
 		}
-
-		if p.Backend.URL.RawQuery == "" || r.URL.RawQuery == "" {
-			r.URL.RawQuery = p.Backend.URL.RawQuery + r.URL.RawQuery
-		} else {
-			r.URL.RawQuery = p.Backend.URL.RawQuery + "&" + r.URL.RawQuery
-		}
-
-		remoteIP, _, _ := net.SplitHostPort(r.RemoteAddr)
-		if remoteIP == "" {
-			remoteIP = "0.0.0.0"
-		}
-
-		r.Header.Set("X-Forwarded-For", remoteIP)
-		r.Header.Set("X-Real-IP", remoteIP)
-		r.Header.Set("X-Forwarded-Proto", "https")
-		r.Header.Set("X-Proxy-App", "svcproxy")
 	}
 
-	return &httputil.ReverseProxy{Director: director}
+	for k, v := range p.Frontend.ResponseHTTPHeaders {
+		w.Header().Set(k, v)
+	}
+
+	p.proxy.ServeHTTP(w, r)
 }
 
 func singleJoiningSlash(a, b string) string {
