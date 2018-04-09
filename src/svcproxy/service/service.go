@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -33,21 +35,27 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for k, v := range p.Frontend.ResponseHTTPHeaders {
+		w.Header().Set(k, v)
+	}
+
 	// Handle plain HTTP requests
 	if r.TLS == nil {
 		switch p.Frontend.HTTPHandler {
 		case "reject":
-			http.NotFound(w, r)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		case "redirect":
-			r.URL.Scheme = "https"
-			http.Redirect(w, r, r.URL.String(), http.StatusFound)
+			redir, err := url.Parse(fmt.Sprintf("http://%s%s", r.Host, r.URL.Path))
+			if err != nil {
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			redir.Scheme = "https"
+
+			http.Redirect(w, r, redir.String(), http.StatusFound)
 			return
 		}
-	}
-
-	for k, v := range p.Frontend.ResponseHTTPHeaders {
-		w.Header().Set(k, v)
 	}
 
 	p.proxy.ServeHTTP(w, r)
