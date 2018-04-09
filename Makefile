@@ -52,7 +52,7 @@ sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-windows-i386.exe.sig 		bin/svcproxy-windows-i386.exe
 
 test:
-	go test ./src/svcproxy/...
+	go test -race -v ./src/svcproxy/...
 
 verify:
 	gpg --verify bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64
