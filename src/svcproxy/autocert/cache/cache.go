@@ -29,7 +29,7 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 		}
 		db, err := sql.Open(driver, dsn)
 		if err != nil {
-			return nil, fmt.Errorf("Error establising database connection: %s", err)
+			return nil, fmt.Errorf("Error establishing database connection: %s", err)
 		}
 		if e := db.Ping(); e != nil {
 			return nil, fmt.Errorf("Error contacting database: %s", e)
