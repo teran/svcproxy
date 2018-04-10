@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,12 +47,17 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		case "redirect":
-			redir, err := url.Parse(fmt.Sprintf("http://%s%s", r.Host, r.URL.Path))
+			host, _, err := net.SplitHostPort(r.Host)
+			if err != nil {
+				// absense of port in address causes error in SplitHostPort()
+				// so hope, it's our case :)
+				host = r.Host
+			}
+			redir, err := url.Parse(fmt.Sprintf("https://%s%s", host, r.URL.Path))
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
-			redir.Scheme = "https"
 
 			http.Redirect(w, r, redir.String(), http.StatusFound)
 			return
