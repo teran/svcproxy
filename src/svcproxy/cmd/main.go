@@ -68,7 +68,10 @@ func main() {
 		log.Fatalf("Error initializing autocert cache: %s", err)
 	}
 
-	log.Printf("Loaded hosts: %+s", hostsList)
+	log.Print("Loaded proxies for hosts:")
+	for _, host := range hostsList {
+		log.Printf(" - %s", host)
+	}
 
 	// Initialize autocert
 	acm := &autocert.Manager{
