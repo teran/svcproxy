@@ -30,7 +30,7 @@ type Listener struct {
 // Service section of the configuration
 type Service struct {
 	Frontend struct {
-		FQDN                string            `yaml:"fqdn"`
+		FQDN                []string          `yaml:"fqdn"`
 		HTTPHandler         string            `yaml:"httpHandler"`
 		ResponseHTTPHeaders map[string]string `yaml:"responseHTTPHeaders"`
 	} `yaml:"frontend"`

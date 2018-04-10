@@ -40,26 +40,28 @@ func main() {
 
 	// Fill service instance with proxies
 	for _, sd := range cfg.Services {
-		f, err := service.NewFrontend(sd.Frontend.FQDN, sd.Frontend.HTTPHandler, sd.Frontend.ResponseHTTPHeaders)
-		if err != nil {
-			log.Printf("Error: unable to initialize frontend %s: %s", sd.Frontend.FQDN, err)
-			continue
-		}
+		for _, fqdn := range sd.Frontend.FQDN {
+			f, err := service.NewFrontend(fqdn, sd.Frontend.HTTPHandler, sd.Frontend.ResponseHTTPHeaders)
+			if err != nil {
+				log.Printf("Error: unable to initialize frontend %s: %s", fqdn, err)
+				continue
+			}
 
-		b, err := service.NewBackend(sd.Backend.URL)
-		if err != nil {
-			log.Printf("Error: unable to initialize backend: %s: %s", sd.Frontend.FQDN, err)
-			continue
-		}
+			b, err := service.NewBackend(sd.Backend.URL)
+			if err != nil {
+				log.Printf("Error: unable to initialize backend: %s: %s", fqdn, err)
+				continue
+			}
 
-		p, err := service.NewProxy(f, b)
-		if err != nil {
-			log.Printf("Error: unable to register proxy %s: %s", sd.Frontend.FQDN, err)
-			continue
-		}
-		svc.AddProxy(p)
+			p, err := service.NewProxy(f, b)
+			if err != nil {
+				log.Printf("Error: unable to register proxy %s: %s", fqdn, err)
+				continue
+			}
+			svc.AddProxy(p)
 
-		hostsList = append(hostsList, sd.Frontend.FQDN)
+			hostsList = append(hostsList, fqdn)
+		}
 	}
 
 	// Initialize caching subsystem

@@ -38,7 +38,9 @@ autocert:
 services:
   - frontend:
       # FQDN service is gonna response by
-      fqdn: myservice.local
+      fqdn:
+        - myservice.local
+        - www.myservice.local
       # What svcproxy should do with requests on HTTP port
       # avaialble options:
       # - "proxy" to work on both of HTTP and HTTPS

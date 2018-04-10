@@ -22,7 +22,7 @@ func (s *ServiceTestSuite) TestConfig() {
 	s.Equal("sql", cfg.Autocert.Cache.Backend)
 	s.Equal("mysql", cfg.Autocert.Cache.BackendOptions["driver"])
 	s.Equal("root@tcp(127.0.0.1:3306)/svcproxy", cfg.Autocert.Cache.BackendOptions["dsn"])
-	s.Equal("myservice.local", cfg.Services[0].Frontend.FQDN)
+	s.Equal([]string{"myservice.local", "www.myservice.local"}, cfg.Services[0].Frontend.FQDN)
 	s.Equal("http://localhost:8082", cfg.Services[0].Backend.URL)
 }
 
