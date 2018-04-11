@@ -49,7 +49,7 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "redirect":
 			host, _, err := net.SplitHostPort(r.Host)
 			if err != nil {
-				// absense of port in address causes error in SplitHostPort()
+				// absence of port in address causes error in SplitHostPort()
 				// so hope, it's our case :)
 				host = r.Host
 			}
