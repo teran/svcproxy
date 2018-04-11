@@ -19,6 +19,11 @@ listener:
   httpAddr: :8080
   # Which port to listen for HTTPS requests
   httpsAddr: :8443
+  # Middlewares list to apply to each request
+  # Available options:
+  # - logging
+  middlewares:
+    - logging
 autocert:
   cache:
     # Cache backend to use

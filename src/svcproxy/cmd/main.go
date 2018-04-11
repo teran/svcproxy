@@ -8,7 +8,7 @@ import (
 
 	"svcproxy/autocert/cache"
 	"svcproxy/config"
-	"svcproxy/middleware/logging"
+	"svcproxy/middleware"
 	"svcproxy/service"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -75,6 +75,11 @@ func main() {
 		log.Printf(" - %s", host)
 	}
 
+	log.Print("Requested middlewares:")
+	for _, m := range cfg.Listener.Middlewares {
+		log.Printf(" - %s", m)
+	}
+
 	// Initialize autocert
 	acm := &autocert.Manager{
 		Cache:      cache,
@@ -85,7 +90,7 @@ func main() {
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
-		Handler: logging.Middleware(acm.HTTPHandler(svc)),
+		Handler: middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
 	}
 	go func() {
 		log.Fatalf("Error listening HTTP socket: %s", httpSvc.ListenAndServe())
@@ -119,7 +124,7 @@ func main() {
 	httpsSvc := &http.Server{
 		Addr:      cfg.Listener.HTTPSAddr,
 		TLSConfig: tlsconf,
-		Handler:   logging.Middleware(svc),
+		Handler:   middleware.Chain(svc, cfg.Listener.Middlewares...),
 	}
 	log.Fatalf("Error listening HTTPS socket: %s", httpsSvc.ListenAndServeTLS("", ""))
 }

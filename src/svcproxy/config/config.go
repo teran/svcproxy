@@ -23,8 +23,9 @@ type Autocert struct {
 
 // Listener section of the configuration
 type Listener struct {
-	HTTPAddr  string `yaml:"httpAddr" default:":80"`
-	HTTPSAddr string `yaml:"httpsAddr" default:":443"`
+	HTTPAddr    string   `yaml:"httpAddr" default:":80"`
+	HTTPSAddr   string   `yaml:"httpsAddr" default:":443"`
+	Middlewares []string `yaml:"middlewares"`
 }
 
 // Service section of the configuration
