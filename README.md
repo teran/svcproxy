@@ -15,9 +15,9 @@ svcproxy uses simple YAML configuration files like this working example:
 ```
 ---
 listener:
-  # Which port to listen for HTTP requests
+  # Which address to listen for HTTP requests
   httpAddr: :8080
-  # Which port to listen for HTTPS requests
+  # Which address to listen for HTTPS requests
   httpsAddr: :8443
   # Middlewares list to apply to each request
   # Available options:
