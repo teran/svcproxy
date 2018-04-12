@@ -87,13 +87,23 @@ func main() {
 		HostPolicy: autocert.HostWhitelist(hostsList...),
 	}
 
+	debugSvc := &http.Server{
+		Addr:    cfg.Listener.DebugAddr,
+		Handler: http.HandlerFunc(svc.DebugHandlerFunc),
+	}
+	go func() {
+		log.Printf("Listening to Debug HTTP socket: %s", cfg.Listener.DebugAddr)
+		log.Fatalf("Error listening Debug HTTP socket: %s", debugSvc.ListenAndServe())
+	}()
+
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
 		Handler: middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
 	}
 	go func() {
-		log.Fatalf("Error listening HTTP socket: %s", httpSvc.ListenAndServe())
+		log.Printf("Listening to Service HTTP socket: %s", cfg.Listener.HTTPAddr)
+		log.Fatalf("Error listening Service HTTP socket: %s", httpSvc.ListenAndServe())
 	}()
 
 	// Configure TLS
@@ -126,5 +136,6 @@ func main() {
 		TLSConfig: tlsconf,
 		Handler:   middleware.Chain(svc, cfg.Listener.Middlewares...),
 	}
+	log.Printf("Listening to Service HTTPS socket: %s", cfg.Listener.HTTPSAddr)
 	log.Fatalf("Error listening HTTPS socket: %s", httpsSvc.ListenAndServeTLS("", ""))
 }

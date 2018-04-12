@@ -1,5 +1,10 @@
 ---
 listener:
+  # Which address to listen for debug handlers
+  # svcproxy will setup handlers for pprof, metrics, tracing
+  # on that address.
+  # WARNING: this port should never been open to wild Internet!
+  debugAddr: :8081
   # Which address to listen for HTTP requests
   httpAddr: :8080
   # Which address to listen for HTTPS requests

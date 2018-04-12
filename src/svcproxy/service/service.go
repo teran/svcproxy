@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"strings"
 )
@@ -65,6 +66,24 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p.proxy.ServeHTTP(w, r)
+}
+
+// DebugHandlerFunc implements handlers for debug listener
+func (s *Svc) DebugHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+
+	mux.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+	mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+	mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+	mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+	mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+	mux.Handle("/health/ping", http.HandlerFunc(s.debugPing))
+
+	mux.ServeHTTP(w, r)
+}
+
+func (s *Svc) debugPing(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("pong"))
 }
 
 func singleJoiningSlash(a, b string) string {

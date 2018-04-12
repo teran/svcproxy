@@ -23,6 +23,7 @@ type Autocert struct {
 
 // Listener section of the configuration
 type Listener struct {
+	DebugAddr   string   `yaml:"debugAddr" default:"8081"`
 	HTTPAddr    string   `yaml:"httpAddr" default:":80"`
 	HTTPSAddr   string   `yaml:"httpsAddr" default:":443"`
 	Middlewares []string `yaml:"middlewares"`
