@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 
 	"svcproxy/autocert/cache"
 	"svcproxy/config"
@@ -19,6 +20,8 @@ var Version = "dev"
 
 func main() {
 	log.Printf("Launching svcproxy=%s ...", Version)
+	log.Printf("Built with %s", runtime.Version())
+
 	// Grab path to configuration file and load it
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
