@@ -7,6 +7,8 @@ import (
 	"net/http/pprof"
 	"net/url"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var _ Service = &Svc{}
@@ -77,6 +79,7 @@ func (s *Svc) DebugHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
 	mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 	mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+	mux.Handle("/health/metrics", promhttp.Handler())
 	mux.Handle("/health/ping", http.HandlerFunc(s.debugPing))
 
 	mux.ServeHTTP(w, r)

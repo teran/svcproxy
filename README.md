@@ -27,8 +27,12 @@ listener:
   # Middlewares list to apply to each request
   # Available options:
   # - logging
+  # - metrics
+  # NOTE: amount of middlewares could affect performance and
+  #       increase response time.
   middlewares:
     - logging
+    - metrics
 autocert:
   cache:
     # Cache backend to use

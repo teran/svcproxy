@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"svcproxy/middleware/logging"
+	"svcproxy/middleware/metrics"
 )
 
 var middlewaresMap = map[string]func(http.Handler) http.Handler{
 	"logging": logging.Middleware,
+	"metrics": metrics.NewMetricsMiddleware().Middleware,
 }
 
 // Chain allows to chain middlewares dynamically
