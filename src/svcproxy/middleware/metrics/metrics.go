@@ -10,44 +10,96 @@ import (
 
 // Metrics type
 type Metrics struct {
-	httpResponsesTotal    *prometheus.CounterVec
-	httpResponseLatencies *prometheus.HistogramVec
+	inFlightRequests           prometheus.Gauge
+	httpRequestsTotal          *prometheus.CounterVec
+	responseDurationSeconds    *prometheus.HistogramVec
+	writeHeaderDurationSeconds *prometheus.HistogramVec
+	responseSizeBytes          *prometheus.HistogramVec
+	requestSizeBytes           *prometheus.HistogramVec
 }
 
 // ResponseWriterWithStatus implements adding status code to ResponseWriter object
 type ResponseWriterWithStatus struct {
 	http.ResponseWriter
-	Status int
+	Status                 int
+	Written                int64
+	ObserveWriteHeaderFunc func(int)
 }
 
 // WriteHeader reimplements WriteHeader() to fill status automatically
 func (rw *ResponseWriterWithStatus) WriteHeader(status int) {
 	rw.Status = status
 	rw.ResponseWriter.WriteHeader(status)
+	if rw.ObserveWriteHeaderFunc != nil {
+		rw.ObserveWriteHeaderFunc(status)
+	}
+}
+
+func (rw *ResponseWriterWithStatus) Write(b []byte) (int, error) {
+	n, err := rw.ResponseWriter.Write(b)
+	rw.Written += int64(n)
+	return n, err
 }
 
 // NewMetricsMiddleware returns new Middleware
 func NewMetricsMiddleware() *Metrics {
 	m := Metrics{}
 
-	m.httpResponsesTotal = prometheus.NewCounterVec(
+	m.inFlightRequests = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "in_flight_requests",
+		Help: "A gauge of requests currently being served by the wrapped handler.",
+	})
+
+	m.httpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_responses_total",
-			Help: "The count of http responses issued, classified by code, host and method.",
+			Name: "http_requests_total",
+			Help: "A counter for requests to the wrapped handler.",
 		},
-		[]string{"code", "host", "method"},
+		[]string{"host", "code", "method"},
 	)
 
-	m.httpResponseLatencies = prometheus.NewHistogramVec(
+	m.responseDurationSeconds = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "http_response_latencies",
-			Help: "The time of http responses issued, classified by code, host and method.",
+			Name:    "response_duration_seconds",
+			Help:    "A histogram of request latencies.",
+			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"code", "host", "method"},
+		[]string{"host", "code", "method"},
 	)
 
-	prometheus.MustRegister(m.httpResponsesTotal)
-	prometheus.MustRegister(m.httpResponseLatencies)
+	m.writeHeaderDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "write_header_duration_seconds",
+			Help:    "A histogram of time to first write latencies.",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"host", "code", "method"},
+	)
+
+	m.requestSizeBytes = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "request_size_bytes",
+			Help:    "A histogram of request sizes.",
+			Buckets: []float64{50, 200, 500, 900, 1500},
+		},
+		[]string{"host", "code", "method"},
+	)
+
+	m.responseSizeBytes = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "response_size_bytes",
+			Help:    "A histogram of response sizes.",
+			Buckets: []float64{50, 200, 500, 900, 1500},
+		},
+		[]string{"host", "code", "method"},
+	)
+
+	prometheus.MustRegister(m.inFlightRequests)
+	prometheus.MustRegister(m.httpRequestsTotal)
+	prometheus.MustRegister(m.responseDurationSeconds)
+	prometheus.MustRegister(m.writeHeaderDurationSeconds)
+	prometheus.MustRegister(m.requestSizeBytes)
+	prometheus.MustRegister(m.responseSizeBytes)
 
 	return &m
 }
@@ -55,15 +107,53 @@ func NewMetricsMiddleware() *Metrics {
 // Middleware wraps Handler to obtain metrics
 func (m *Metrics) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := ResponseWriterWithStatus{ResponseWriter: w}
-		start := time.Now()
+		now := time.Now()
+		rw := ResponseWriterWithStatus{
+			ResponseWriter: w,
+			ObserveWriteHeaderFunc: func(status int) {
+				m.writeHeaderDurationSeconds.WithLabelValues(r.Host, strconv.Itoa(status), r.Method).Observe(time.Since(now).Seconds())
+			},
+		}
+
+		m.inFlightRequests.Inc()
+		defer m.inFlightRequests.Dec()
 
 		next.ServeHTTP(&rw, r)
 
-		elapsed := time.Since(start)
-		msElapsed := elapsed / time.Millisecond
+		statusCode := strconv.Itoa(rw.Status)
 
-		m.httpResponsesTotal.WithLabelValues(strconv.Itoa(rw.Status), r.Host, r.Method).Inc()
-		m.httpResponseLatencies.WithLabelValues(strconv.Itoa(rw.Status), r.Host, r.Method).Observe(float64(msElapsed))
+		m.responseDurationSeconds.WithLabelValues(r.Host, statusCode, r.Method).Observe(time.Since(now).Seconds())
+		m.httpRequestsTotal.WithLabelValues(r.Host, statusCode, r.Method).Inc()
+		m.requestSizeBytes.WithLabelValues(r.Host, statusCode, r.Method).Observe(float64(calculateRequestSize(r)))
+		m.responseSizeBytes.WithLabelValues(r.Host, statusCode, r.Method).Observe(float64(rw.Written))
 	})
+}
+
+// Calculate (approximately) request size
+func calculateRequestSize(r *http.Request) int {
+	size := 0
+
+	size += len(r.Method)
+	size += len(r.URL.Path)
+	size += len(r.Proto)
+
+	// Add 6 bytes for "Host: "
+	size += 6
+	size += len(r.Host)
+
+	for header, values := range r.Header {
+		size += len(header)
+		for _, value := range values {
+			// Add 2 bytes for semicolon and space usually present between
+			// header name and it's value
+			size += 2
+			size += len(value)
+		}
+	}
+
+	if r.ContentLength != -1 {
+		size += int(r.ContentLength)
+	}
+
+	return size
 }
