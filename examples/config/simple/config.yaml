@@ -33,6 +33,7 @@ autocert:
       # DSN(Data Source Name) to be passed to driver
       dsn: root@tcp(127.0.0.1:3306)/svcproxy
       # PSK(Pre-shared key) to encrypt/decrypt cached data
+      # If not set or empty string cache will be used without encryption
       encryptionKey: testkey
 services:
   - frontend:

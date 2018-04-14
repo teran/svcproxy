@@ -48,9 +48,13 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 		return nil, fmt.Errorf("Unsupported driver")
 	}
 
+	var encKey []byte
+	if encryptionKey != nil {
+		encKey = pbkdf2.Key(key[:15], key[16:32], 1048, 32, sha256.New)
+	}
 	return &Cache{
 		driver:        driver,
-		encryptionKey: pbkdf2.Key(key[:15], key[16:32], 1048, 32, sha256.New),
+		encryptionKey: encKey,
 	}, nil
 }
 
@@ -65,22 +69,29 @@ func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	decryptedData, err := m.decrypt(data)
+	data, err = m.decode(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return decryptedData, err
+	if m.encryptionKey == nil {
+		return data, nil
+	}
+
+	return m.decrypt(data)
 }
 
 // Put stores certificate data to cache
 func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
-	encryptedData, err := m.encrypt(data)
-	if err != nil {
-		return err
+	if m.encryptionKey != nil {
+		var err error
+		data, err = m.encrypt(data)
+		if err != nil {
+			return err
+		}
 	}
 
-	return m.driver.Put(ctx, key, encryptedData)
+	return m.driver.Put(ctx, key, m.encode(data))
 }
 
 // Delete removes certificate data from cache
@@ -89,14 +100,6 @@ func (m *Cache) Delete(ctx context.Context, key string) error {
 }
 
 func (m *Cache) decrypt(ciphertext []byte) ([]byte, error) {
-	ct := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertext)))
-	l, err := base64.StdEncoding.Decode(ct, ciphertext)
-	if err != nil {
-		return nil, err
-	}
-
-	ciphertext = ct[:l]
-
 	block, err := aes.NewCipher(m.encryptionKey)
 	if err != nil {
 		return nil, err
@@ -130,11 +133,22 @@ func (m *Cache) encrypt(plaintext []byte) ([]byte, error) {
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
-	ct := make([]byte, base64.StdEncoding.EncodedLen(len(ciphertext)))
-	base64.StdEncoding.Encode(ct, ciphertext)
+	return ciphertext, nil
+}
+
+func (m *Cache) decode(input []byte) ([]byte, error) {
+	ct := make([]byte, base64.StdEncoding.DecodedLen(len(input)))
+	l, err := base64.StdEncoding.Decode(ct, input)
 	if err != nil {
 		return nil, err
 	}
 
-	return ct, nil
+	return ct[:l], nil
+}
+
+func (m *Cache) encode(input []byte) []byte {
+	ct := make([]byte, base64.StdEncoding.EncodedLen(len(input)))
+	base64.StdEncoding.Encode(ct, input)
+
+	return ct
 }

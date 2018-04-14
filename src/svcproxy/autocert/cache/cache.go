@@ -44,7 +44,7 @@ func newSQLCacheBackend(options map[string]string) (autocert.Cache, error) {
 
 	encryptionKey, ok := options["encryptionKey"]
 	if !ok || encryptionKey == "" {
-		return nil, fmt.Errorf("encryptionKey option to backend is required and cannot be empty")
+		return sqlcache.NewCache(db, nil)
 	}
 
 	return sqlcache.NewCache(db, []byte(encryptionKey))
