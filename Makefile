@@ -54,6 +54,9 @@ sign:
 test:
 	go test -race -v ./src/svcproxy/...
 
+benchmark:
+	cd ./src/svcproxy/autocert/cache/sql && go test -bench=.
+
 verify:
 	gpg --verify bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64
 	gpg --verify bin/svcproxy-darwin-i386.sig 				bin/svcproxy-darwin-i386

@@ -70,3 +70,33 @@ func (s *CacheTestSuite) SetupTest() {
 func TestMyCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheTestSuite))
 }
+
+func BenchmarkGetFromCacheMySQL(b *testing.B) {
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	c, err := NewCache(db, []byte("testKey"))
+	if err != nil {
+		panic(err)
+	}
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "test-data")
+	}
+}
+
+func BenchmarkGetFromCachePostgreSQL(b *testing.B) {
+	db, err := sql.Open("postgres", "postgres://postgres@localhost/svcproxy?sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	c, err := NewCache(db, []byte("testKey"))
+	if err != nil {
+		panic(err)
+	}
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "test-data")
+	}
+}

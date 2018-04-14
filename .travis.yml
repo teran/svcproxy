@@ -17,4 +17,4 @@ before_install:
   - psql -U postgres svcproxy < src/svcproxy/autocert/cache/sql/sql_migration.sql
 
 script:
-    - make test build-linux-amd64
+    - make test build-linux-amd64 benchmark
