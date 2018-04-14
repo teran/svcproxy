@@ -7,7 +7,7 @@
 [![Docker Automated build](https://img.shields.io/docker/automated/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
 [![License](https://img.shields.io/github/license/teran/svcproxy.svg)](https://github.com/teran/svcproxy/blob/master/LICENSE)
 
-HTTP app-agnostic proxy allows to gather metrics and automatically issue certificates using ACME based CA, like Let's Encrypt
+HTTP app-agnostic reverse proxy allows to gather metrics and automatically issue certificates using ACME based CA, like Let's Encrypt
 
 # Configuration example
 
