@@ -5,20 +5,59 @@ data:
   svcproxy.yaml: |-
     ---
     listener:
-      httpAddr: :80
-      httpsAddr: :443
+      # Which address to listen for debug handlers
+      # svcproxy will setup handlers for pprof, metrics, tracing
+      # on that address.
+      # WARNING: this port should never been open to wild Internet!
+      debugAddr: :8081
+      # Which address to listen for HTTP requests
+      httpAddr: :8080
+      # Which address to listen for HTTPS requests
+      httpsAddr: :8443
+      # Middlewares list to apply to each request
+      # Available options:
+      # - logging
+      # - metrics
+      # NOTE: amount of middlewares could affect performance and
+      #       increase response time.
+      middlewares:
+        - logging
+        - metrics
     autocert:
       cache:
+        # Cache backend to use
+        # Currently available:
+        # - sql
         backend: sql
         backendOptions:
+          # Driver to use by backend
+          # Currently avaialble:
+          # - mysql
+          # - postgres
           driver: mysql
-          dsn: svcproxy:svcproxy@tcp(mysql:3306)/svcproxy
+          # DSN(Data Source Name) to be passed to driver
+          dsn: root@tcp(127.0.0.1:3306)/svcproxy
+          # PSK(Pre-shared key) to encrypt/decrypt cached data
           encryptionKey: testkey
     services:
       - frontend:
-          fqdn: site.local
+          # FQDN service is gonna response by
+          fqdn:
+            - myservice.local
+            - www.myservice.local
+          # What svcproxy should do with requests on HTTP port
+          # avaialble options:
+          # - "proxy" to work on both of HTTP and HTTPS
+          # - "redirect" to redirect requests from HTTP to HTTPS
+          # - "reject" to reject any requests to HTTP(except ACME challenges) with 404
+          httpHandler: proxy
+          # HTTP Headers to send with response
+          # Usually usefull for HSTS, CORS, etc.
+          responseHTTPHeaders:
+            Strict-Transport-Security: "max-age=31536000"
         backend:
-          url: http://example.com
+          # Service backend to handle requests behind proxy
+          url: http://localhost:8082
 
 metadata:
   labels:

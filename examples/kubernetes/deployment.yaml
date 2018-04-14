@@ -4,16 +4,24 @@ kind: Deployment
 metadata:
   labels:
     app: svcproxy
+    project: svcproxy
   name: svcproxy
+  namespace: svcproxy
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: svcproxy
+      project: svcproxy
   template:
     metadata:
+      annotations:
+        prometheus.io/path: /health/metrics
+        prometheus.io/port: "8081"
+        prometheus.io/scrape: "true"
       labels:
         app: svcproxy
+        project: svcproxy
     spec:
       containers:
       - image: teran/svcproxy:latest
@@ -22,6 +30,8 @@ spec:
         env:
         - name: CONFIG_PATH
           value: /etc/svcproxy/svcproxy.yaml
+        - name: GOMAXPROCS
+          value: "2"
         ports:
         - containerPort: 80
           name: http
@@ -29,13 +39,28 @@ spec:
         - containerPort: 443
           name: https
           protocol: TCP
+        - containerPort: 8081
+          name: debughttp
+          protocol: TCP
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
-          limits:
-            cpu: 100m
+            cpu: 1000m
             memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /health/ping
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health/ping
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 5
         volumeMounts:
         - name: svcproxy
           mountPath: /etc/svcproxy
