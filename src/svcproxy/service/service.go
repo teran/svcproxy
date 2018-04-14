@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/pprof"
@@ -56,13 +55,15 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				// so hope, it's our case :)
 				host = r.Host
 			}
-			redir, err := url.Parse(fmt.Sprintf("https://%s%s", host, r.URL.Path))
-			if err != nil {
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
+
+			redirURL := &url.URL{
+				Scheme:   "https",
+				Host:     host,
+				Path:     r.URL.Path,
+				RawQuery: r.URL.RawQuery,
 			}
 
-			http.Redirect(w, r, redir.String(), http.StatusFound)
+			http.Redirect(w, r, redirURL.String(), http.StatusFound)
 			return
 		}
 	}

@@ -63,7 +63,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 
 	svc.AddProxy(p)
 
-	r, err := http.NewRequest("POST", "http://test.local/blah", nil)
+	r, err := http.NewRequest("POST", "http://test.local/blah?getVar=getValue&getVar2=getValue2", nil)
 	s.Require().NoError(err)
 
 	w := httptest.NewRecorder()
@@ -73,7 +73,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 	result := w.Result()
 	s.Equal(http.StatusFound, result.StatusCode)
 	s.Equal("header-value", result.Header.Get("X-Blah"))
-	s.Equal("https://test.local/blah", result.Header.Get("Location"))
+	s.Equal("https://test.local/blah?getVar=getValue&getVar2=getValue2", result.Header.Get("Location"))
 }
 
 func TestMyServiceTestSuite(t *testing.T) {
