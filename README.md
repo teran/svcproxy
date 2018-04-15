@@ -86,5 +86,7 @@ docker pull teran/svcproxy
  - [X] HTTPS-only service
  - [X] Fix cache tests
  - [X] Multiple names for proxy(aliases)
+ - [ ] Autocert SQL cache to cache certificates in memory(reduce amount of SELECT's)
+ - [ ] Autocert cache for Redis or Mongo (?)
  - [ ] Authentication(?)
  - [ ] Tracing(?)
