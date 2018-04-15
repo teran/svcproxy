@@ -9,7 +9,7 @@ listener:
   httpAddr: :8080
   # Which address to listen for HTTPS requests
   httpsAddr: :8443
-  # Middlewares list to apply to each request
+  # Middlewares list to apply to each request passing through HTTPS socket
   # Available options:
   # - logging
   # - metrics

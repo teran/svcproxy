@@ -102,7 +102,7 @@ func main() {
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
-		Handler: middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
+		Handler: acm.HTTPHandler(svc),
 	}
 	go func() {
 		log.Printf("Listening to Service HTTP socket: %s", cfg.Listener.HTTPAddr)
