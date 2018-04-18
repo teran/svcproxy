@@ -12,9 +12,7 @@ addons:
 
 before_install:
   - mysql -e 'CREATE DATABASE svcproxy;'
-  - mysql svcproxy < src/svcproxy/autocert/cache/sql/sql_migration.sql
   - psql -c 'create database svcproxy;' -U postgres
-  - psql -U postgres svcproxy < src/svcproxy/autocert/cache/sql/sql_migration.sql
 
 script:
     - make test build-linux-amd64
