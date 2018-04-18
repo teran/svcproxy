@@ -23,7 +23,7 @@ type SQLCacheTestSuite struct {
 
 func (s *SQLCacheTestSuite) TestMySQLCacheNoEncryption() {
 	dataSample := []byte("test-byte")
-	c, err := NewCache(s.mysql, nil)
+	c, err := NewCache(s.mysql, nil, false)
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -41,7 +41,7 @@ func (s *SQLCacheTestSuite) TestMySQLCacheNoEncryption() {
 
 func (s *SQLCacheTestSuite) TestMySQLCache() {
 	dataSample := []byte("test-byte")
-	c, err := NewCache(s.mysql, []byte("testKey"))
+	c, err := NewCache(s.mysql, []byte("testKey"), false)
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -59,7 +59,7 @@ func (s *SQLCacheTestSuite) TestMySQLCache() {
 
 func (s *SQLCacheTestSuite) TestPostgreSQLCache() {
 	dataSample := []byte("test-byte")
-	c, err := NewCache(s.postgresql, []byte("testKey"))
+	c, err := NewCache(s.postgresql, []byte("testKey"), false)
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -86,6 +86,24 @@ func (s *SQLCacheTestSuite) SetupTest() {
 	s.Require().NotNil(s.postgresql)
 }
 
+func (s *SQLCacheTestSuite) TestMySQLCacheWithPrecaching() {
+	dataSample := []byte("test-byte")
+	c, err := NewCache(s.mysql, []byte("testKey"), true)
+	s.Require().NoError(err)
+	s.Require().NotNil(c)
+
+	err = c.Put(context.Background(), "test-data", dataSample)
+	s.Require().NoError(err)
+
+	data, err := c.Get(context.Background(), "test-data")
+	s.Require().NoError(err)
+	s.Require().NotNil(data)
+	s.Require().Equal(dataSample, data)
+
+	err = c.Delete(context.Background(), "test-data")
+	s.Require().NoError(err)
+}
+
 func TestSQLCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(SQLCacheTestSuite))
 }
@@ -101,7 +119,7 @@ func BenchmarkGetFromCacheMySQL(b *testing.B) {
 		panic(err)
 	}
 
-	c, err := NewCache(db, []byte("testKey"))
+	c, err := NewCache(db, []byte("testKey"), false)
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +148,7 @@ func BenchmarkGetFromCacheMySQLNoEncryption(b *testing.B) {
 		panic(err)
 	}
 
-	c, err := NewCache(db, nil)
+	c, err := NewCache(db, nil, false)
 	if err != nil {
 		panic(err)
 	}
@@ -158,7 +176,7 @@ func BenchmarkGetFromCachePostgreSQL(b *testing.B) {
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
-	c, err := NewCache(db, []byte("testKey"))
+	c, err := NewCache(db, []byte("testKey"), false)
 	if err != nil {
 		panic(err)
 	}
@@ -186,7 +204,7 @@ func BenchmarkGetFromCachePostgreSQLNoEncryption(b *testing.B) {
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
-	c, err := NewCache(db, nil)
+	c, err := NewCache(db, nil, false)
 	if err != nil {
 		panic(err)
 	}
@@ -201,5 +219,34 @@ func BenchmarkGetFromCachePostgreSQLNoEncryption(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		c.Get(context.Background(), "testdata_unencrypted")
+	}
+}
+
+func BenchmarkGetFromCacheMySQLWithPrecaching(b *testing.B) {
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+	}
+
+	c, err := NewCache(db, []byte("testKey"), true)
+	if err != nil {
+		panic(err)
+	}
+
+	dataSample := make([]byte, 4096)
+	rand.Read(dataSample)
+
+	err = c.Put(context.Background(), "testdata", dataSample)
+	if err != nil {
+		panic(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "testdata")
 	}
 }

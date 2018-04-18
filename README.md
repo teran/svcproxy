@@ -50,6 +50,12 @@ autocert:
       # PSK(Pre-shared key) to encrypt/decrypt cached data
       # If not set or empty string cache will be used without encryption
       encryptionKey: testkey
+      # Precache certificates in memory in unencrypted form to make it much-much
+      # faster, faster as serve from memory.
+      # WARNING: this could decrease security of the certificates
+      # WARNING: this will decrease security and could cause certificates leaks
+      #          in case of core dumps turned on
+      usePrecaching: false
 services:
   - frontend:
       # FQDN service is gonna response by

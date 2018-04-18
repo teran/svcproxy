@@ -3,6 +3,7 @@ package cache
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"golang.org/x/crypto/acme/autocert"
 
@@ -42,10 +43,16 @@ func newSQLCacheBackend(options map[string]string) (autocert.Cache, error) {
 		return nil, fmt.Errorf("Error contacting database: %s", e)
 	}
 
-	encryptionKey, ok := options["encryptionKey"]
-	if !ok || encryptionKey == "" {
-		return sqlcache.NewCache(db, nil)
+	var usePrecaching bool
+	usePrecachingString, ok := options["usePrecaching"]
+	if ok {
+		usePrecaching, _ = strconv.ParseBool(usePrecachingString)
 	}
 
-	return sqlcache.NewCache(db, []byte(encryptionKey))
+	encryptionKey, ok := options["encryptionKey"]
+	if !ok || encryptionKey == "" {
+		return sqlcache.NewCache(db, nil, usePrecaching)
+	}
+
+	return sqlcache.NewCache(db, []byte(encryptionKey), usePrecaching)
 }

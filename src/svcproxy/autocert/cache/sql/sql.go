@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sync"
 
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/crypto/pbkdf2"
@@ -25,10 +26,12 @@ var _ autocert.Cache = &Cache{}
 type Cache struct {
 	driver        autocert.Cache
 	encryptionKey []byte
+	usePrecaching bool
+	precache      sync.Map
 }
 
 // NewCache returns Cache instance
-func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
+func NewCache(db *sql.DB, encryptionKey []byte, usePrecaching bool) (*Cache, error) {
 	h := sha256.New()
 	h.Write(encryptionKey)
 	key := h.Sum(nil)
@@ -52,14 +55,24 @@ func NewCache(db *sql.DB, encryptionKey []byte) (*Cache, error) {
 	if encryptionKey != nil {
 		encKey = pbkdf2.Key(key[:15], key[16:32], 1048, 32, sha256.New)
 	}
+
 	return &Cache{
 		driver:        driver,
 		encryptionKey: encKey,
+		usePrecaching: usePrecaching,
+		precache:      sync.Map{},
 	}, nil
 }
 
 // Get retrieves certificate data from cache
 func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
+	if m.usePrecaching {
+		data, ok := m.precache.Load(key)
+		if ok {
+			return data.([]byte), nil
+		}
+	}
+
 	data, err := m.driver.Get(ctx, key)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -78,24 +91,47 @@ func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 		return data, nil
 	}
 
-	return m.decrypt(data)
+	data, err = m.decrypt(data)
+	if err != nil {
+		return nil, err
+	}
+
+	m.precache.Store(key, data)
+
+	return data, err
 }
 
 // Put stores certificate data to cache
 func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
+	if m.usePrecaching {
+		m.precache.Store(key, data)
+	}
+
 	if m.encryptionKey != nil {
 		var err error
 		data, err = m.encrypt(data)
 		if err != nil {
+			m.precache.Delete(key)
 			return err
 		}
 	}
 
-	return m.driver.Put(ctx, key, m.encode(data))
+	data = m.encode(data)
+	err := m.driver.Put(ctx, key, data)
+	if err != nil {
+		m.precache.Delete(key)
+		return err
+	}
+
+	return nil
 }
 
 // Delete removes certificate data from cache
 func (m *Cache) Delete(ctx context.Context, key string) error {
+	if m.usePrecaching {
+		m.precache.Delete(key)
+	}
+
 	return m.driver.Delete(ctx, key)
 }
 
