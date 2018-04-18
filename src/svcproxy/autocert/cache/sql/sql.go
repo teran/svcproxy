@@ -43,9 +43,17 @@ func NewCache(db *sql.DB, encryptionKey []byte, usePrecaching bool) (*Cache, err
 		driver = &mysql.MySQL{
 			DB: db,
 		}
+
+		if err := maybeMigrate(db, "mysql"); err != nil {
+			return nil, err
+		}
 	case "Driver: *pq.Driver":
 		driver = &postgresql.PostgreSQL{
 			DB: db,
+		}
+
+		if err := maybeMigrate(db, "postgres"); err != nil {
+			return nil, err
 		}
 	default:
 		return nil, fmt.Errorf("Unsupported driver")

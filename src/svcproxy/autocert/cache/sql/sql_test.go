@@ -77,7 +77,7 @@ func (s *SQLCacheTestSuite) TestPostgreSQLCache() {
 
 func (s *SQLCacheTestSuite) SetupTest() {
 	var err error
-	s.mysql, err = sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	s.mysql, err = sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
 	s.Require().NoError(err)
 	s.Require().NotNil(s.mysql)
 
@@ -109,7 +109,7 @@ func TestSQLCacheTestSuite(t *testing.T) {
 }
 
 func BenchmarkGetFromCacheMySQL(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
 	if err != nil {
 		panic(err)
 	}
@@ -138,7 +138,7 @@ func BenchmarkGetFromCacheMySQL(b *testing.B) {
 }
 
 func BenchmarkGetFromCacheMySQLNoEncryption(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
 	if err != nil {
 		panic(err)
 	}
@@ -223,7 +223,7 @@ func BenchmarkGetFromCachePostgreSQLNoEncryption(b *testing.B) {
 }
 
 func BenchmarkGetFromCacheMySQLWithPrecaching(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy")
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
 	if err != nil {
 		panic(err)
 	}
