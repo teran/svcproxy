@@ -36,12 +36,14 @@ data:
           # - postgres
           driver: mysql
           # DSN(Data Source Name) to be passed to driver
-          dsn: root@tcp(127.0.0.1:3306)/svcproxy
+          # NOTE: parseTime option is required for MySQL driver to be true for
+          #       migrations engine
+          dsn: root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true
           # PSK(Pre-shared key) to encrypt/decrypt cached data
           # If not set or empty string cache will be used without encryption
           encryptionKey: testkey
           # Precache certificates in memory in unencrypted form to make it much-much
-          # faster, faster as serve from memory.
+          # faster, faster as serve from memory. default = false.
           # WARNING: this could decrease security of the certificates
           # WARNING: this will decrease security and could cause certificates leaks
           #          in case of core dumps turned on
