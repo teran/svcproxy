@@ -250,3 +250,51 @@ func BenchmarkGetFromCacheMySQLWithPrecaching(b *testing.B) {
 		c.Get(context.Background(), "testdata")
 	}
 }
+
+func BenchmarkPutToCacheMySQL(b *testing.B) {
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+	}
+
+	c, err := NewCache(db, []byte("testKey"), false)
+	if err != nil {
+		panic(err)
+	}
+
+	dataSample := make([]byte, 4096)
+	rand.Read(dataSample)
+
+	for n := 0; n < b.N; n++ {
+		c.Put(context.Background(), "testdata", dataSample)
+	}
+}
+
+func BenchmarkPutToCacheMySQLWithPrecaching(b *testing.B) {
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+	}
+
+	c, err := NewCache(db, []byte("testKey"), true)
+	if err != nil {
+		panic(err)
+	}
+
+	dataSample := make([]byte, 4096)
+	rand.Read(dataSample)
+
+	for n := 0; n < b.N; n++ {
+		c.Put(context.Background(), "testdata", dataSample)
+	}
+}
