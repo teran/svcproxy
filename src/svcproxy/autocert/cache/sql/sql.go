@@ -111,24 +111,25 @@ func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 
 // Put stores certificate data to cache
 func (m *Cache) Put(ctx context.Context, key string, data []byte) error {
-	if m.usePrecaching {
-		m.precache.Store(key, data)
-	}
-
+	var resultData []byte
 	if m.encryptionKey != nil {
 		var err error
-		data, err = m.encrypt(data)
+		resultData, err = m.encrypt(data)
 		if err != nil {
-			m.precache.Delete(key)
 			return err
 		}
+	} else {
+		resultData = data
 	}
 
-	data = m.encode(data)
-	err := m.driver.Put(ctx, key, data)
+	resultData = m.encode(resultData)
+	err := m.driver.Put(ctx, key, resultData)
 	if err != nil {
-		m.precache.Delete(key)
 		return err
+	}
+
+	if m.usePrecaching {
+		m.precache.Store(key, data)
 	}
 
 	return nil
