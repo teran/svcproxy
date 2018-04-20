@@ -105,7 +105,7 @@ func NewMetricsMiddleware() *Metrics {
 }
 
 // Middleware wraps Handler to obtain metrics
-func (m *Metrics) Middleware(next http.Handler) http.Handler {
+func (m *Metrics) Middleware(next http.Handler, _ map[string]string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		rw := ResponseWriterWithStatus{

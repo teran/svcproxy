@@ -21,8 +21,8 @@ data:
       # NOTE: amount of middlewares could affect performance and
       #       increase response time.
       middlewares:
-        - logging
-        - metrics
+        - name: logging
+        - name: metrics
     autocert:
       cache:
         # Cache backend to use

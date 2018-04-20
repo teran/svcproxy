@@ -21,7 +21,7 @@ func (rw *ResponseWriterWithStatus) WriteHeader(status int) {
 
 // Middleware wraps Handler to log it's request/response metrics
 // such as response HTTP status, payload length, time spent.
-func Middleware(next http.Handler) http.Handler {
+func Middleware(next http.Handler, _ map[string]string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := ResponseWriterWithStatus{ResponseWriter: w}
 		start := time.Now()

@@ -1,21 +1,31 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 
 	"svcproxy/middleware/logging"
 	"svcproxy/middleware/metrics"
 )
 
-var middlewaresMap = map[string]func(http.Handler) http.Handler{
+var middlewaresMap = map[string]func(http.Handler, map[string]string) http.Handler{
 	"logging": logging.Middleware,
 	"metrics": metrics.NewMetricsMiddleware().Middleware,
 }
 
 // Chain allows to chain middlewares dynamically
-func Chain(f http.Handler, ms ...string) http.Handler {
+func Chain(f http.Handler, ms ...map[string]string) http.Handler {
 	for _, m := range ms {
-		f = middlewaresMap[m](f)
+		name, ok := m["name"]
+		if !ok {
+			log.Fatalf("Missed name field in middleware map: %+v", m)
+		}
+		fm, ok := middlewaresMap[name]
+		if !ok {
+			log.Fatalf("Middleware '%s' is requested but not registered.", name)
+		}
+		log.Printf("Chaining middleware %s", name)
+		f = fm(f, m)
 	}
 
 	return f

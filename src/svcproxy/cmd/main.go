@@ -88,11 +88,6 @@ func main() {
 		log.Printf(" - %s", host)
 	}
 
-	log.Print("Requested middlewares:")
-	for _, m := range cfg.Listener.Middlewares {
-		log.Printf(" - %s", m)
-	}
-
 	// Initialize autocert
 	acm := &autocert.Manager{
 		Cache:      cache,
