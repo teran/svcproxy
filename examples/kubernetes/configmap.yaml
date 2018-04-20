@@ -69,6 +69,20 @@ data:
         backend:
           # Service backend to handle requests behind proxy
           url: http://localhost:8082
+        # Authnticator to use for current proxy
+        # Currently available:
+        # - BasicAuth
+        # - NoAuth (default)
+        authentication:
+          method: BasicAuth
+          # Options to pass to authenticator, normally depends on what is supported
+          # by particular authenticator
+          # For BasicAuth supported options:
+          # - backend (backend to use by BasicAuth authenticator)
+          # - file(used by htpasswd backend), path to htpasswd file
+          options:
+            backend: htpasswd
+            file: /etc/svcproxy/htpasswd
 
 metadata:
   labels:

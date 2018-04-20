@@ -38,6 +38,13 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if p.Authenticator != nil {
+		if !p.Authenticator.IsAuthenticated(r) {
+			p.Authenticator.Authenticate(w, r)
+			return
+		}
+	}
+
 	for k, v := range p.Frontend.ResponseHTTPHeaders {
 		w.Header().Set(k, v)
 	}

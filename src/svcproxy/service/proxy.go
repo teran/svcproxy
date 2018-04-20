@@ -4,14 +4,17 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+
+	"svcproxy/authentication"
 )
 
 // NewProxy creates new Proxy instance
-func NewProxy(frontend *Frontend, backend *Backend) (*Proxy, error) {
+func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication.Authenticator) (*Proxy, error) {
 	p := &Proxy{
-		Frontend: frontend,
-		Backend:  backend,
-		proxy:    NewReverseProxy(backend),
+		Frontend:      frontend,
+		Backend:       backend,
+		Authenticator: authenticator,
+		proxy:         NewReverseProxy(backend),
 	}
 	return p, nil
 }

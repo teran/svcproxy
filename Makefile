@@ -52,7 +52,7 @@ sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-windows-i386.exe.sig 		bin/svcproxy-windows-i386.exe
 
 test:
-	go test -race -v ./src/svcproxy/...
+	GOCACHE=off go test -race -v ./src/svcproxy/...
 
 benchmark:
 	cd ./src/svcproxy/autocert/cache/sql && go test -bench=. -cpu=1,2,3,4

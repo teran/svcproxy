@@ -39,6 +39,10 @@ type Service struct {
 	Backend struct {
 		URL string `yaml:"url"`
 	} `yaml:"backend"`
+	Authentication struct {
+		Method  string            `yaml:"method"`
+		Options map[string]string `yaml:"options"`
+	} `yaml:"authentication"`
 }
 
 // Load reads YAML configuration file and returns Config

@@ -3,6 +3,8 @@ package service
 import (
 	"net/http/httputil"
 	"net/url"
+
+	"svcproxy/authentication"
 )
 
 // Service interface
@@ -12,9 +14,10 @@ type Service interface {
 
 // Proxy type
 type Proxy struct {
-	Frontend *Frontend
-	Backend  *Backend
-	proxy    *httputil.ReverseProxy
+	Frontend      *Frontend
+	Backend       *Backend
+	proxy         *httputil.ReverseProxy
+	Authenticator authentication.Authenticator
 }
 
 // Frontend type

@@ -31,7 +31,7 @@ func (s *ServiceTestSuite) TestService() {
 	b, err := NewBackend(testsrv.URL)
 	s.Require().NoError(err)
 
-	p, err := NewProxy(f, b)
+	p, err := NewProxy(f, b, nil)
 	s.Require().NoError(err)
 
 	svc.AddProxy(p)
@@ -58,7 +58,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 	b, err := NewBackend("http://localhost")
 	s.Require().NoError(err)
 
-	p, err := NewProxy(f, b)
+	p, err := NewProxy(f, b, nil)
 	s.Require().NoError(err)
 
 	svc.AddProxy(p)

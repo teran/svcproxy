@@ -7,12 +7,13 @@ import (
 	"os"
 	"runtime"
 
+	"golang.org/x/crypto/acme/autocert"
+
+	"svcproxy/authentication/factory"
 	"svcproxy/autocert/cache"
 	"svcproxy/config"
 	"svcproxy/middleware"
 	"svcproxy/service"
-
-	"golang.org/x/crypto/acme/autocert"
 )
 
 // Version to be filled by ldflags
@@ -50,15 +51,24 @@ func main() {
 				continue
 			}
 
-			b, err := service.NewBackend(sd.Backend.URL)
+			a, err := factory.NewAuthenticator(sd.Authentication.Method, sd.Authentication.Options)
 			if err != nil {
-				log.Printf("Error: unable to initialize backend: %s: %s", fqdn, err)
+				log.Printf("Error: unable to initialize authenticator %s: %s", sd.Authentication.Method, err)
+				log.Printf("Skipping service %s from initialization", fqdn)
 				continue
 			}
 
-			p, err := service.NewProxy(f, b)
+			b, err := service.NewBackend(sd.Backend.URL)
+			if err != nil {
+				log.Printf("Error: unable to initialize backend: %s: %s", fqdn, err)
+				log.Printf("Skipping service %s from initialization", fqdn)
+				continue
+			}
+
+			p, err := service.NewProxy(f, b, a)
 			if err != nil {
 				log.Printf("Error: unable to register proxy %s: %s", fqdn, err)
+				log.Printf("Skipping service %s from initialization", fqdn)
 				continue
 			}
 			svc.AddProxy(p)

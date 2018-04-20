@@ -79,7 +79,22 @@ services:
     backend:
       # Service backend to handle requests behind proxy
       url: http://localhost:8082
+    # Authnticator to use for current proxy
+    # Currently available:
+    # - BasicAuth
+    # - NoAuth (default)
+    authentication:
+      method: BasicAuth
+      # Options to pass to authenticator, normally depends on what is supported
+      # by particular authenticator
+      # For BasicAuth supported options:
+      # - backend (backend to use by BasicAuth authenticator)
+      # - file(used by htpasswd backend), path to htpasswd file
+      options:
+        backend: htpasswd
+        file: /etc/svcproxy/htpasswd
 ```
+
 
 Some options could be passed as Environment variables:
  * `CONFIG_PATH` - path to YAML configuration file in file system
@@ -91,12 +106,28 @@ Automatic builds are available on DockerHub:
 docker pull teran/svcproxy
 ```
 
+# Authntication
+## BasicAuth
+### htpasswd backend
+
+htpasswd backend implements simple Basic Auth mechanism via HTTP headers(rfc2617),
+using `htpasswd` file as a user database(Bcrypt only is supported).
+
+To generate `htpasswd` file for svcproxy please use the following command:
+
+```
+htpasswd -Bc <filename> <username>
+```
+
+Please note, `htpasswd` CLI is not vendored with Docker image or in any other way
+with svcproxy, but could be easily obtained from packge repositories like `Homebrew`, `ubuntu.archive.com`, etc.
+
 # TODO
  - [X] Redirect from HTTP to HTTPS(configurable)
  - [X] HTTPS-only service
  - [X] Fix cache tests
  - [X] Multiple names for proxy(aliases)
  - [X] Autocert SQL cache to cache certificates in memory(reduce amount of SELECT's)
+ - [X] Authentication(?)
  - [ ] Autocert cache for Redis or Mongo (?)
- - [ ] Authentication(?)
  - [ ] Tracing(?)
