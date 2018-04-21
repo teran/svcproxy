@@ -81,9 +81,17 @@ func (s *SQLCacheTestSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.Require().NotNil(s.mysql)
 
+	// Migrate manually to avoid possible race on each NewCache call
+	err = maybeMigrate(s.mysql, "mysql")
+	s.Require().NoError(err)
+
 	s.postgresql, err = sql.Open("postgres", "postgres://postgres@localhost/svcproxy?sslmode=disable")
 	s.Require().NoError(err)
 	s.Require().NotNil(s.postgresql)
+
+	// Migrate manually to avoid possible race on each NewCache call
+	err = maybeMigrate(s.postgresql, "postgres")
+	s.Require().NoError(err)
 }
 
 func (s *SQLCacheTestSuite) TestMySQLCacheWithPrecaching() {
