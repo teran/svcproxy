@@ -2,7 +2,6 @@ package sql
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
 	"testing"
 
@@ -21,27 +20,9 @@ type SQLCacheTestSuite struct {
 	postgresql *sql.DB
 }
 
-func (s *SQLCacheTestSuite) TestMySQLCacheNoEncryption() {
-	dataSample := []byte("test-byte")
-	c, err := NewCache(s.mysql, nil, false)
-	s.Require().NoError(err)
-	s.Require().NotNil(c)
-
-	err = c.Put(context.Background(), "test-data", dataSample)
-	s.Require().NoError(err)
-
-	data, err := c.Get(context.Background(), "test-data")
-	s.Require().NoError(err)
-	s.Require().NotNil(data)
-	s.Require().Equal(dataSample, data)
-
-	err = c.Delete(context.Background(), "test-data")
-	s.Require().NoError(err)
-}
-
 func (s *SQLCacheTestSuite) TestMySQLCache() {
 	dataSample := []byte("test-byte")
-	c, err := NewCache(s.mysql, []byte("testKey"), false)
+	c, err := NewCache(s.mysql)
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -59,7 +40,7 @@ func (s *SQLCacheTestSuite) TestMySQLCache() {
 
 func (s *SQLCacheTestSuite) TestPostgreSQLCache() {
 	dataSample := []byte("test-byte")
-	c, err := NewCache(s.postgresql, []byte("testKey"), false)
+	c, err := NewCache(s.postgresql)
 	s.Require().NoError(err)
 	s.Require().NotNil(c)
 
@@ -81,6 +62,9 @@ func (s *SQLCacheTestSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.Require().NotNil(s.mysql)
 
+	_, err = s.mysql.Exec("DROP TABLE IF EXISTS `svcproxy`;")
+	s.Require().NoError(err)
+
 	// Migrate manually to avoid possible race on each NewCache call
 	err = maybeMigrate(s.mysql, "mysql")
 	s.Require().NoError(err)
@@ -89,220 +73,14 @@ func (s *SQLCacheTestSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.Require().NotNil(s.postgresql)
 
+	_, err = s.postgresql.Exec("DROP TABLE IF EXISTS svcproxy;")
+	s.Require().NoError(err)
+
 	// Migrate manually to avoid possible race on each NewCache call
 	err = maybeMigrate(s.postgresql, "postgres")
 	s.Require().NoError(err)
 }
 
-func (s *SQLCacheTestSuite) TestMySQLCacheWithPrecaching() {
-	dataSample := []byte("test-byte")
-	c, err := NewCache(s.mysql, []byte("testKey"), true)
-	s.Require().NoError(err)
-	s.Require().NotNil(c)
-
-	err = c.Put(context.Background(), "test-data", dataSample)
-	s.Require().NoError(err)
-
-	data, err := c.Get(context.Background(), "test-data")
-	s.Require().NoError(err)
-	s.Require().NotNil(data)
-	s.Require().Equal(dataSample, data)
-
-	err = c.Delete(context.Background(), "test-data")
-	s.Require().NoError(err)
-}
-
 func TestSQLCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(SQLCacheTestSuite))
-}
-
-func BenchmarkGetFromCacheMySQL(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	c, err := NewCache(db, []byte("testKey"), false)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	err = c.Put(context.Background(), "testdata", dataSample)
-	if err != nil {
-		panic(err)
-	}
-
-	for n := 0; n < b.N; n++ {
-		c.Get(context.Background(), "testdata")
-	}
-}
-
-func BenchmarkGetFromCacheMySQLNoEncryption(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	c, err := NewCache(db, nil, false)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	err = c.Put(context.Background(), "testdata", dataSample)
-	if err != nil {
-		panic(err)
-	}
-
-	for n := 0; n < b.N; n++ {
-		c.Get(context.Background(), "testdata")
-	}
-}
-
-func BenchmarkGetFromCachePostgreSQL(b *testing.B) {
-	db, err := sql.Open("postgres", "postgres://postgres@localhost/svcproxy?sslmode=disable")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-	c, err := NewCache(db, []byte("testKey"), false)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	err = c.Put(context.Background(), "test-data", dataSample)
-	if err != nil {
-		panic(err)
-	}
-
-	for n := 0; n < b.N; n++ {
-		c.Get(context.Background(), "test-data")
-	}
-}
-
-func BenchmarkGetFromCachePostgreSQLNoEncryption(b *testing.B) {
-	db, err := sql.Open("postgres", "postgres://postgres@localhost/svcproxy?sslmode=disable")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-	c, err := NewCache(db, nil, false)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	err = c.Put(context.Background(), "testdata_unencrypted", dataSample)
-	if err != nil {
-		panic(err)
-	}
-
-	for n := 0; n < b.N; n++ {
-		c.Get(context.Background(), "testdata_unencrypted")
-	}
-}
-
-func BenchmarkGetFromCacheMySQLWithPrecaching(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	c, err := NewCache(db, []byte("testKey"), true)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	err = c.Put(context.Background(), "testdata", dataSample)
-	if err != nil {
-		panic(err)
-	}
-
-	for n := 0; n < b.N; n++ {
-		c.Get(context.Background(), "testdata")
-	}
-}
-
-func BenchmarkPutToCacheMySQL(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	c, err := NewCache(db, []byte("testKey"), false)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	for n := 0; n < b.N; n++ {
-		c.Put(context.Background(), "testdata", dataSample)
-	}
-}
-
-func BenchmarkPutToCacheMySQLWithPrecaching(b *testing.B) {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	c, err := NewCache(db, []byte("testKey"), true)
-	if err != nil {
-		panic(err)
-	}
-
-	dataSample := make([]byte, 4096)
-	rand.Read(dataSample)
-
-	for n := 0; n < b.N; n++ {
-		c.Put(context.Background(), "testdata", dataSample)
-	}
 }

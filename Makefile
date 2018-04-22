@@ -55,7 +55,7 @@ test:
 	GOCACHE=off go test -race -v ./src/svcproxy/...
 
 benchmark:
-	cd ./src/svcproxy/autocert/cache/sql && go test -bench=. -cpu=1,2,3,4
+	cd ./src/svcproxy/autocert/cache && go test -bench=. -cpu=1,2,3,4
 
 verify:
 	gpg --verify bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64

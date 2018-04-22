@@ -1,23 +1,43 @@
 package cache
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 type CacheTestSuite struct {
 	suite.Suite
 }
 
-func (s *CacheTestSuite) TestInitializeSQLCache() {
+func (s *CacheTestSuite) TestInitializeSQLCacheWithEncryption() {
 	options := map[string]string{
 		"driver":        "mysql",
 		"dsn":           "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true",
 		"encryptionKey": "testkey",
 	}
-	_, err := NewCacheFactory("sql", options)
+	c, err := NewCacheFactory("sql", options)
 	s.Require().NoError(err)
+
+	// Put data sample
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	s.Require().NoError(err)
+
+	// Get data sample back
+	data, err := c.Get(context.Background(), "test-key")
+	s.Require().NoError(err)
+	s.Equal([]byte("test-data"), data)
+
+	// Delete sample
+	err = c.Delete(context.Background(), "test-key")
+	s.Require().NoError(err)
+
+	// Test if sample is still present
+	data, err = c.Get(context.Background(), "test-key")
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Equal([]byte(nil), data)
 }
 
 func (s *CacheTestSuite) TestInitializeSQLCacheNoEncryption() {
@@ -25,8 +45,82 @@ func (s *CacheTestSuite) TestInitializeSQLCacheNoEncryption() {
 		"driver": "mysql",
 		"dsn":    "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true",
 	}
-	_, err := NewCacheFactory("sql", options)
+	c, err := NewCacheFactory("sql", options)
 	s.Require().NoError(err)
+
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	s.Require().NoError(err)
+
+	data, err := c.Get(context.Background(), "test-key")
+	s.Require().NoError(err)
+	s.Equal([]byte("test-data"), data)
+
+	// Delete sample
+	err = c.Delete(context.Background(), "test-key")
+	s.Require().NoError(err)
+
+	// Test if sample is still present
+	data, err = c.Get(context.Background(), "test-key")
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Equal([]byte(nil), data)
+}
+
+func (s *CacheTestSuite) TestInitializeSQLCacheWithPrecaching() {
+	options := map[string]string{
+		"driver":        "mysql",
+		"dsn":           "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true",
+		"usePrecaching": "true",
+		"encryptionKey": "",
+	}
+	c, err := NewCacheFactory("sql", options)
+	s.Require().NoError(err)
+
+	// Put data sample
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	s.Require().NoError(err)
+
+	// Get data sample back
+	data, err := c.Get(context.Background(), "test-key")
+	s.Require().NoError(err)
+	s.Equal([]byte("test-data"), data)
+
+	// Delete sample
+	err = c.Delete(context.Background(), "test-key")
+	s.Require().NoError(err)
+
+	// Test if sample is still present
+	data, err = c.Get(context.Background(), "test-key")
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Equal([]byte(nil), data)
+}
+
+func (s *CacheTestSuite) TestInitializeSQLCacheWithEncryptionAndPrecaching() {
+	options := map[string]string{
+		"driver":        "mysql",
+		"dsn":           "root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true",
+		"encryptionKey": "testkey",
+		"usePrecaching": "true",
+	}
+	c, err := NewCacheFactory("sql", options)
+	s.Require().NoError(err)
+
+	// Put data sample
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	s.Require().NoError(err)
+
+	// Get data sample back
+	data, err := c.Get(context.Background(), "test-key")
+	s.Require().NoError(err)
+	s.Equal([]byte("test-data"), data)
+
+	// Delete sample
+	err = c.Delete(context.Background(), "test-key")
+	s.Require().NoError(err)
+
+	// Test if sample is still present
+	data, err = c.Get(context.Background(), "test-key")
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Equal([]byte(nil), data)
 }
 
 func TestCacheTestSuite(t *testing.T) {
