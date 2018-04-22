@@ -38,6 +38,7 @@ autocert:
   cache:
     # Cache backend to use
     # Currently available:
+    # - dir
     # - sql
     backend: sql
     backendOptions:

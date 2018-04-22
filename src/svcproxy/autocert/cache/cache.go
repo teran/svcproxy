@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"sync"
 
@@ -155,6 +156,11 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 		if err != nil {
 			return nil, err
 		}
+	case "dir":
+		b, err = newDirCacheBackend(options)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var c autocert.Cache = &Cache{
@@ -165,6 +171,23 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 	}
 
 	return c, err
+}
+
+func newDirCacheBackend(options map[string]string) (autocert.Cache, error) {
+	dir, ok := options["path"]
+	if !ok {
+		return nil, fmt.Errorf("Option 'path' is required for 'dir' cache backend")
+	}
+
+	_, err := os.Stat(dir)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0700)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return autocert.DirCache(dir), nil
 }
 
 func newSQLCacheBackend(options map[string]string) (autocert.Cache, error) {
