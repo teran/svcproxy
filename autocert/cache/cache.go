@@ -100,7 +100,7 @@ func (c *Cache) Put(ctx context.Context, key string, data []byte) error {
 
 // Delete calls backend's Delete method.
 // If precache is used it will first delete from cache no matter if backend's
-// Put completed successully or failed.
+// Put completed successfully or failed.
 func (c *Cache) Delete(ctx context.Context, key string) error {
 	if c.usePrecaching {
 		c.precache.Delete(key)
