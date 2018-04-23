@@ -16,8 +16,9 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/crypto/pbkdf2"
 
-	// MySQL driver
 	"github.com/go-redis/redis"
+
+	// MySQL driver
 	_ "github.com/go-sql-driver/mysql"
 
 	// PostgreSQL driver
