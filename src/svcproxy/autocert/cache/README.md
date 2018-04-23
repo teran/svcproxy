@@ -1,10 +1,13 @@
 # Autocert/cache
 
 `autocert.Cache` implementations for svcproxy
+Allows to use precaching for realy fast reads and encryption for better security.
 
 # Configuration
 
 ## Dir Cache backend
+
+Simply wraps [`golang.org/x/crypto/acme/autocert.DirCache`](https://godoc.org/golang.org/x/crypto/acme/autocert#DirCache)
 
 Required options:
  * `path` - path to the directory to store cache. Directory may exists or will be
@@ -12,12 +15,14 @@ Required options:
 
 ## SQL Cache backend
 
+Backend allows to use relational database as a storage.
+
 Required options:
  * `driver` - database driver to use. Allowed options: `mysql`, `postgres`
  * `dsn` - Data source name refering database in the form supported by Go's drivers.
    Examples:
-    MySQL: `root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true`
-    PostgreSQL: `postgres://postgres@localhost/svcproxy?sslmode=disable`
+    - MySQL: `root@tcp(127.0.0.1:3306)/svcproxy?parseTime=true`
+    - PostgreSQL: `postgres://postgres@localhost/svcproxy?sslmode=disable`
 
    More examples could be found in tests.
 
