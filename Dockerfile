@@ -1,8 +1,8 @@
 FROM golang
 MAINTAINER Igor Shishkin <me@teran.ru>
 
-ADD . /go
-RUN make build-linux-amd64
+ADD . /go/src/github.com/teran/svcproxy
+RUN cd /go/src/github.com/teran/svcproxy && make build-linux-amd64
 
 FROM alpine
 MAINTAINER Igor Shishkin <me@teran.ru>
@@ -15,6 +15,6 @@ LABEL org.label-schema.vcs-ref=$VCS_REF \
 RUN apk add --update --no-cache \
   ca-certificates && \
   rm -vf /var/cache/apk/*
-COPY --from=0 /go/bin/svcproxy-linux-amd64 /svcproxy
+COPY --from=0 /go/src/github.com/teran/svcproxy/bin/svcproxy-linux-amd64 /svcproxy
 
 ENTRYPOINT ["/svcproxy"]
