@@ -5,7 +5,7 @@
 [![Layers size](https://images.microbadger.com/badges/image/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
 [![Recent build commit](https://images.microbadger.com/badges/commit/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
 [![Docker Automated build](https://img.shields.io/docker/automated/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
-[![GoDoc](https://godoc.org/github.com/teran/svcproxy?status.svg)](http://godoc.org/github.com/teran/svcproxy)
+[![GoDoc](https://godoc.org/github.com/teran/svcproxy?status.svg)](https://godoc.org/github.com/teran/svcproxy)
 [![License](https://img.shields.io/github/license/teran/svcproxy.svg)](https://github.com/teran/svcproxy/blob/master/LICENSE)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy?ref=badge_shield)
 
