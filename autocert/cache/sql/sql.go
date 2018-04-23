@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"reflect"
-	"sync"
 
 	"golang.org/x/crypto/acme/autocert"
 
@@ -18,10 +17,7 @@ var _ autocert.Cache = &Cache{}
 
 // Cache implements autocert.Cache with MySQL database
 type Cache struct {
-	driver        autocert.Cache
-	encryptionKey []byte
-	usePrecaching bool
-	precache      sync.Map
+	driver autocert.Cache
 }
 
 // NewCache returns Cache instance
