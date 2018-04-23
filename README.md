@@ -56,8 +56,7 @@ autocert:
       encryptionKey: testkey
       # Precache certificates in memory in unencrypted form to make it much-much
       # faster, faster as serve from memory. default = false.
-      # Currently supported in the following cache drivers:
-      # - sql
+      # Supported in all of the available cache backends.
       # WARNING: this could decrease security of the certificates
       # WARNING: this will decrease security and could cause certificates leaks
       #          in case of core dumps turned on
