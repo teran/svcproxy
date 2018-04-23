@@ -14,6 +14,21 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/singleflight",
+    "internal/util"
+  ]
+  revision = "877867d2845fbaf86798befe410b6ceb6f5c29a3"
+  version = "v6.10.2"
+
+[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "a0583e0143b1624142adab07e0e97fe106d99561"
@@ -140,6 +155,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "117ee15e2ad9ba92561b22bf66032065a06c96d7302b014cbe14a9700290ef9e"
+  inputs-digest = "b42f7bb174702e5b289e92af8a577ae7db3ea040a3022631300b0bbe14f54f6f"
   solver-name = "gps-cdcl"
   solver-version = 1

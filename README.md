@@ -41,6 +41,7 @@ autocert:
     # Cache backend to use
     # Currently available:
     # - dir
+    # - redis
     # - sql
     backend: sql
     backendOptions:
@@ -132,7 +133,7 @@ with svcproxy, but could be easily obtained from packge repositories like `Homeb
  - [X] Multiple names for proxy(aliases)
  - [X] Autocert SQL cache to cache certificates in memory(reduce amount of SELECT's)
  - [X] Authentication(?)
- - [ ] Autocert cache for Redis or Mongo (?)
+ - [X] Autocert cache for Redis or Mongo (?)
  - [ ] Tracing(?)
 
 

@@ -155,6 +155,30 @@ func (s *CacheTestSuite) TestInitializeDirCacheWithEncryptionAndPrecaching() {
 	s.Equal([]byte(nil), data)
 }
 
+func (s *CacheTestSuite) TestInitializeRedisCacheNoEncryption() {
+	options := map[string]string{
+		"addr": "127.0.0.1:6379",
+	}
+	c, err := NewCacheFactory("redis", options)
+	s.Require().NoError(err)
+
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	s.Require().NoError(err)
+
+	data, err := c.Get(context.Background(), "test-key")
+	s.Require().NoError(err)
+	s.Equal([]byte("test-data"), data)
+
+	// Delete sample
+	err = c.Delete(context.Background(), "test-key")
+	s.Require().NoError(err)
+
+	// Test if sample is still present
+	data, err = c.Get(context.Background(), "test-key")
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Equal([]byte(nil), data)
+}
+
 func TestCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheTestSuite))
 }

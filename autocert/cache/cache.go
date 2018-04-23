@@ -17,11 +17,13 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	// MySQL driver
+	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
 
 	// PostgreSQL driver
 	_ "github.com/lib/pq"
 
+	rediscache "github.com/teran/svcproxy/autocert/cache/redis"
 	sqlcache "github.com/teran/svcproxy/autocert/cache/sql"
 )
 
@@ -176,6 +178,11 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 		if err != nil {
 			return nil, err
 		}
+	case "redis":
+		b, err = newRedisCacheBackend(options)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var c autocert.Cache = &Cache{
@@ -222,4 +229,31 @@ func newSQLCacheBackend(options map[string]string) (autocert.Cache, error) {
 		return nil, fmt.Errorf("Error contacting database: %s", e)
 	}
 	return sqlcache.NewCache(db)
+}
+
+func newRedisCacheBackend(options map[string]string) (autocert.Cache, error) {
+	addr, ok := options["addr"]
+	if !ok || addr == "" {
+		return nil, fmt.Errorf("No 'addr' specified for Redis cache")
+	}
+
+	password, _ := options["password"]
+
+	dbS, ok := options["db"]
+	if !ok {
+		dbS = "0"
+	}
+
+	db, err := strconv.Atoi(dbS)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing db field: %s", err)
+	}
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+	})
+
+	return rediscache.NewCache(client)
 }

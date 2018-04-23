@@ -190,3 +190,61 @@ func BenchmarkCacheGetDirWithEncryptionAndPrecaching(b *testing.B) {
 		c.Get(context.Background(), "test-key")
 	}
 }
+
+// Redis benchmarks
+func BenchmarkCacheGetRedisWithoutEncryptionAndPrecaching(b *testing.B) {
+	r := require.New(b)
+
+	options := map[string]string{
+		"addr":          "127.0.0.1:6379",
+		"usePrecaching": "false",
+		"encryptionKey": "",
+	}
+	c, err := NewCacheFactory("redis", options)
+	r.NoError(err)
+
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	r.NoError(err)
+
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "test-key")
+	}
+}
+
+func BenchmarkCacheGetRedisWithEncryptionAndWithoutPrecaching(b *testing.B) {
+	r := require.New(b)
+
+	options := map[string]string{
+		"addr":          "127.0.0.1:6379",
+		"usePrecaching": "false",
+		"encryptionKey": "blah",
+	}
+	c, err := NewCacheFactory("redis", options)
+	r.NoError(err)
+
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	r.NoError(err)
+
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "test-key")
+	}
+}
+
+func BenchmarkCacheGetRedisWithEncryptionAndPrecaching(b *testing.B) {
+	r := require.New(b)
+
+	options := map[string]string{
+		"addr":          "127.0.0.1:6379",
+		"usePrecaching": "true",
+		"encryptionKey": "blah",
+	}
+	c, err := NewCacheFactory("redis", options)
+	r.NoError(err)
+
+	err = c.Put(context.Background(), "test-key", []byte("test-data"))
+	r.NoError(err)
+
+	for n := 0; n < b.N; n++ {
+		c.Get(context.Background(), "test-key")
+	}
+}

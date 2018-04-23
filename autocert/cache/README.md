@@ -13,6 +13,17 @@ Required options:
  * `path` - path to the directory to store cache. Directory may exists or will be
    created by svcproxy
 
+## Redis Cache backend
+
+Redis cache backend allows to use Redis for certificate cache
+
+Required options:
+* `addr` - Redis database address
+
+Additional options:
+* `password` - database password
+* `db` - database (0 - for default database)
+
 ## SQL Cache backend
 
 Backend allows to use relational database as a storage.

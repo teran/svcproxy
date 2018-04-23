@@ -4,8 +4,9 @@ go:
   - "1.10"
 
 services:
-  - postgresql
   - mysql
+  - postgresql
+  - redis-server
 
 addons:
   postgresql: "9.6"

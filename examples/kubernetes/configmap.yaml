@@ -28,6 +28,7 @@ data:
         # Cache backend to use
         # Currently available:
         # - dir
+        # - redis
         # - sql
         backend: sql
         backendOptions:
