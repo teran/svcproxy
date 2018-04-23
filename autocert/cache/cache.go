@@ -27,6 +27,7 @@ import (
 
 var _ autocert.Cache = &Cache{}
 
+// Cache struct to store high level cache instance
 type Cache struct {
 	backend       autocert.Cache
 	encryptionKey []byte
@@ -34,6 +35,12 @@ type Cache struct {
 	precache      sync.Map
 }
 
+// Get calls backend's Get to retrieve data from cache by key.
+// If precaching is used Get will attempt to retrieve data from cache first,
+// and if this attempt fails - will ask backend's Get to fill cache and return
+// the data.
+// If encryption is turned on Get will try to decrypt data retrieved from
+// backend's Get befor filling cache and returning the data.
 func (c *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 	if c.usePrecaching {
 		data, ok := c.precache.Load(key)
@@ -62,6 +69,11 @@ func (c *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 	return data, nil
 }
 
+// Put calls backend's Put to store the data to cache.
+// If precache is used it will also fill cache if no errors returned by backend's
+// Put.
+// If encryption is turned on it will encrypt data before calling backend's Put,
+// but precache will be filled with plaintext data.
 func (c *Cache) Put(ctx context.Context, key string, data []byte) error {
 	var resultData []byte
 	if c.encryptionKey != nil {
@@ -86,6 +98,9 @@ func (c *Cache) Put(ctx context.Context, key string, data []byte) error {
 	return nil
 }
 
+// Delete calls backend's Delete method.
+// If precache is used it will first delete from cache no matter if backend's
+// Put completed successully or failed.
 func (c *Cache) Delete(ctx context.Context, key string) error {
 	if c.usePrecaching {
 		c.precache.Delete(key)

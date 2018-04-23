@@ -9,12 +9,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var _ BasicAuthBackend = &HTPasswd{}
+var _ Backend = &HTPasswd{}
 
+// HTPasswd backend type
 type HTPasswd struct {
 	passwdFile string
 }
 
+// IsValidCredentials checks client's credentials against htpasswd file
 func (h *HTPasswd) IsValidCredentials(username, password string) (bool, error) {
 	fp, err := os.Open(h.passwdFile)
 	if err != nil {
