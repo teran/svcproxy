@@ -4,7 +4,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"svcproxy/authentication"
+	"github.com/teran/svcproxy/authentication"
 )
 
 // Service interface

@@ -3,9 +3,9 @@ package factory
 import (
 	"fmt"
 
-	"svcproxy/authentication"
-	ba "svcproxy/authentication/basicauth"
-	na "svcproxy/authentication/noauth"
+	"github.com/teran/svcproxy/authentication"
+	ba "github.com/teran/svcproxy/authentication/basicauth"
+	na "github.com/teran/svcproxy/authentication/noauth"
 )
 
 // NewAuthenticator returns specific authenticator based on configuration

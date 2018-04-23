@@ -9,11 +9,11 @@ import (
 
 	"golang.org/x/crypto/acme/autocert"
 
-	"svcproxy/authentication/factory"
-	"svcproxy/autocert/cache"
-	"svcproxy/config"
-	"svcproxy/middleware"
-	"svcproxy/service"
+	"github.com/teran/svcproxy/authentication/factory"
+	"github.com/teran/svcproxy/autocert/cache"
+	"github.com/teran/svcproxy/config"
+	"github.com/teran/svcproxy/middleware"
+	"github.com/teran/svcproxy/service"
 )
 
 // Version to be filled by ldflags

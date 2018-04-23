@@ -22,7 +22,7 @@ import (
 	// PostgreSQL driver
 	_ "github.com/lib/pq"
 
-	sqlcache "svcproxy/autocert/cache/sql"
+	sqlcache "github.com/teran/svcproxy/autocert/cache/sql"
 )
 
 var _ autocert.Cache = &Cache{}

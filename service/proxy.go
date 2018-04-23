@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"svcproxy/authentication"
+	"github.com/teran/svcproxy/authentication"
 )
 
 // NewProxy creates new Proxy instance

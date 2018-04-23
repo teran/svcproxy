@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/crypto/bcrypt"
 
-	"svcproxy/authentication"
+	"github.com/teran/svcproxy/authentication"
 )
 
 const testUsername = "gotest"

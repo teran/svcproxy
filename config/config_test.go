@@ -12,7 +12,7 @@ type ServiceTestSuite struct {
 }
 
 func (s *ServiceTestSuite) TestConfig() {
-	configSample, err := ioutil.ReadFile("../../../examples/config/simple/config.yaml")
+	configSample, err := ioutil.ReadFile("../examples/config/simple/config.yaml")
 	s.Require().NoError(err)
 
 	cfg, err := parse(configSample)

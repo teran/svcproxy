@@ -3,7 +3,7 @@ package noauth
 import (
 	"net/http"
 
-	"svcproxy/authentication"
+	"github.com/teran/svcproxy/authentication"
 )
 
 var _ authentication.Authenticator = &NoAuth{}

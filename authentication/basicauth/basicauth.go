@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"svcproxy/authentication"
+
+	"github.com/teran/svcproxy/authentication"
 )
 
 var _ authentication.Authenticator = &BasicAuth{}

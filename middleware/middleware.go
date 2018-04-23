@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"svcproxy/middleware/logging"
-	"svcproxy/middleware/metrics"
+	"github.com/teran/svcproxy/middleware/logging"
+	"github.com/teran/svcproxy/middleware/metrics"
 )
 
 var middlewaresMap = map[string]func(http.Handler, map[string]string) http.Handler{

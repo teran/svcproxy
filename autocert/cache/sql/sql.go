@@ -10,8 +10,8 @@ import (
 
 	"golang.org/x/crypto/acme/autocert"
 
-	"svcproxy/autocert/cache/sql/mysql"
-	"svcproxy/autocert/cache/sql/postgresql"
+	"github.com/teran/svcproxy/autocert/cache/sql/mysql"
+	"github.com/teran/svcproxy/autocert/cache/sql/postgresql"
 )
 
 var _ autocert.Cache = &Cache{}
