@@ -1,0 +1,19 @@
+version: '3'
+services:
+  mysql:
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      MYSQL_DATABASE: "svcproxy"
+    image: mariadb
+    ports:
+      - "3306:3306"
+  postgresql:
+    environment:
+      POSTGRES_DB: "svcproxy"
+    image: postgres
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
