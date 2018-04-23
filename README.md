@@ -36,6 +36,11 @@ listener:
   middlewares:
     - name: logging
     - name: metrics
+logger:
+  # Log formatter to use. Available options are: text, json
+  formatter: text
+  # Log verbosity. Available options are: debug, info, warning, error, fatal, panic
+  level: debug
 autocert:
   cache:
     # Cache backend to use
