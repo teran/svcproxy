@@ -18,6 +18,10 @@ listener:
   middlewares:
     - name: logging
     - name: metrics
+logger:
+  # Log format. Available options are: text, json
+  formatter: text
+  level: debug
 autocert:
   cache:
     # Cache backend to use

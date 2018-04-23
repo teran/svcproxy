@@ -1,10 +1,11 @@
 package logging
 
 import (
-	"log"
 	"net"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // ResponseWriterWithStatus implements adding status code to ResponseWriter object
@@ -32,25 +33,24 @@ func Middleware(next http.Handler, _ map[string]string) http.Handler {
 
 		remoteAddr, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
-			log.Printf("Error parsing RemoteAddr string: %s", err)
+			log.Warnf("Error parsing RemoteAddr string: %s", err)
 			return
 		}
 
-		log.Printf(
-			`host="%s" remote_addr="%s" proxy={forwarded_for="%s" forwarded_proto="%s" forwarded_host="%s" real_ip="%s"} method="%s" request_uri="%s" status_code=%d referer="%s" user_agent="%s" duration=%f request_length=%d`,
-			r.Host,
-			remoteAddr,
-			r.Header.Get("X-Forwarded-For"),
-			r.Header.Get("X-Forwarded-Proto"),
-			r.Header.Get("X-Forwarded-Host"),
-			r.Header.Get("X-Real-IP"),
-			r.Method,
-			r.RequestURI,
-			rw.Status,
-			r.Referer(),
-			r.UserAgent(),
-			elapsed.Seconds(),
-			r.ContentLength,
-		)
+		log.WithFields(log.Fields{
+			"host":            r.Host,
+			"remote_addr":     remoteAddr,
+			"forwarded_for":   r.Header.Get("X-Forwarded-For"),
+			"forwarded_proto": r.Header.Get("X-Forwarded-Proto"),
+			"forwarded_host":  r.Header.Get("X-Forwarded-Host"),
+			"real_ip":         r.Header.Get("X-Real-IP"),
+			"method":          r.Method,
+			"request_uri":     r.RequestURI,
+			"status_code":     rw.Status,
+			"referer":         r.Referer(),
+			"user_agent":      r.UserAgent(),
+			"duration":        elapsed.Seconds(),
+			"request_length":  r.ContentLength,
+		}).Info("Request handled")
 	})
 }

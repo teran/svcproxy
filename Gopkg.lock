@@ -119,6 +119,12 @@
   revision = "081fe17d19ff4e2dd9f5a0c1158e6bcf74da6906"
 
 [[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
@@ -136,9 +142,19 @@
     "acme/autocert",
     "bcrypt",
     "blowfish",
-    "pbkdf2"
+    "pbkdf2",
+    "ssh/terminal"
   ]
   revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
 
 [[projects]]
   name = "gopkg.in/gorp.v1"
@@ -155,6 +171,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b42f7bb174702e5b289e92af8a577ae7db3ea040a3022631300b0bbe14f54f6f"
+  inputs-digest = "1b317e7ad2af5f091a23354d413dd8409a7dd638af29d183eb65549cc7ca81ca"
   solver-name = "gps-cdcl"
   solver-version = 1

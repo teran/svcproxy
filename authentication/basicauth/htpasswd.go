@@ -2,7 +2,7 @@ package basicauth
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
 	"strings"
 
@@ -29,8 +29,7 @@ func (h *HTPasswd) IsValidCredentials(username, password string) (bool, error) {
 		line := scanner.Text()
 		credentials := strings.Split(line, ":")
 		if len(credentials) != 2 {
-			log.Printf("BasicAuth authenticator error: passwd file %s mailformed", h.passwdFile)
-			continue
+			return false, fmt.Errorf("BasicAuth htpasswd authenticator error: passwd file '%s' mailformed", h.passwdFile)
 		}
 		if username == credentials[0] {
 			if err := bcrypt.CompareHashAndPassword([]byte(credentials[1]), []byte(password)); err == nil {

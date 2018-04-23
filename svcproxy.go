@@ -2,11 +2,12 @@ package main
 
 import (
 	"crypto/tls"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"runtime"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/teran/svcproxy/authentication/factory"
@@ -20,9 +21,6 @@ import (
 var Version = "dev"
 
 func main() {
-	log.Printf("Launching svcproxy=%s ...", Version)
-	log.Printf("Built with %s", runtime.Version())
-
 	// Grab path to configuration file and load it
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
@@ -31,8 +29,45 @@ func main() {
 
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		log.Fatalf("Error parsing configuration: %s", err)
+		log.WithFields(log.Fields{
+			"reason": err,
+		}).Fatal("Error parsing configuration")
 	}
+
+	switch cfg.Logger.Formatter {
+	case "json":
+		log.SetFormatter(&log.JSONFormatter{})
+	case "text":
+		log.SetFormatter(&log.TextFormatter{})
+	default:
+		log.WithFields(log.Fields{
+			"reason": fmt.Sprintf("unknown formatter '%s'", cfg.Logger.Formatter),
+		}).Fatalf("Error configuring logger")
+	}
+
+	switch cfg.Logger.Level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warning":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	case "panic":
+		log.SetLevel(log.PanicLevel)
+	default:
+		log.WithFields(log.Fields{
+			"reason": fmt.Sprintf("unknown log level '%s'", cfg.Logger.Level),
+		}).Fatalf("Error configuring logging level")
+	}
+
+	log.WithFields(log.Fields{
+		"version": Version,
+	}).Infof("Launching svcproxy...")
+	log.Debugf("Built with %s", runtime.Version())
 
 	// Create service instance
 	svc, err := service.NewService()
@@ -47,28 +82,39 @@ func main() {
 		for _, fqdn := range sd.Frontend.FQDN {
 			f, err := service.NewFrontend(fqdn, sd.Frontend.HTTPHandler, sd.Frontend.ResponseHTTPHeaders)
 			if err != nil {
-				log.Printf("Error: unable to initialize frontend %s: %s", fqdn, err)
+				log.WithFields(log.Fields{
+					"reason": err,
+					"object": fqdn,
+				}).Warn("Error: unable to initialize frontend. Skipping.")
 				continue
 			}
 
 			a, err := factory.NewAuthenticator(sd.Authentication.Method, sd.Authentication.Options)
 			if err != nil {
-				log.Printf("Error: unable to initialize authenticator %s: %s", sd.Authentication.Method, err)
-				log.Printf("Skipping service %s from initialization", fqdn)
+				log.WithFields(log.Fields{
+					"reason": err,
+					"object": sd.Authentication.Method,
+					"parent": fqdn,
+				}).Warn("Error: unable to initialize auhenticator. Skipping.")
 				continue
 			}
 
 			b, err := service.NewBackend(sd.Backend.URL)
 			if err != nil {
-				log.Printf("Error: unable to initialize backend: %s: %s", fqdn, err)
-				log.Printf("Skipping service %s from initialization", fqdn)
+				log.WithFields(log.Fields{
+					"reason": err,
+					"object": sd.Backend.URL,
+					"parent": fqdn,
+				}).Warn("Error: unable to initialize backend. Skipping.")
 				continue
 			}
 
 			p, err := service.NewProxy(f, b, a)
 			if err != nil {
-				log.Printf("Error: unable to register proxy %s: %s", fqdn, err)
-				log.Printf("Skipping service %s from initialization", fqdn)
+				log.WithFields(log.Fields{
+					"reason": err,
+					"object": fqdn,
+				}).Warn("Error: unable to register proxy. Skipping.")
 				continue
 			}
 			svc.AddProxy(p)
@@ -80,12 +126,14 @@ func main() {
 	// Initialize caching subsystem
 	cache, err := cache.NewCacheFactory(cfg.Autocert.Cache.Backend, cfg.Autocert.Cache.BackendOptions)
 	if err != nil {
-		log.Fatalf("Error initializing autocert cache: %s", err)
+		log.WithFields(log.Fields{
+			"reason": err,
+		}).Fatal("Error: unable to initialize autocert cache")
 	}
 
-	log.Print("Loaded proxies for hosts:")
+	log.Debug("Loaded proxies for hosts:")
 	for _, host := range hostsList {
-		log.Printf(" - %s", host)
+		log.Debugf(" - %s", host)
 	}
 
 	// Initialize autocert
@@ -100,8 +148,14 @@ func main() {
 		Handler: http.HandlerFunc(svc.DebugHandlerFunc),
 	}
 	go func() {
-		log.Printf("Listening to Debug HTTP socket: %s", cfg.Listener.DebugAddr)
-		log.Fatalf("Error listening Debug HTTP socket: %s", debugSvc.ListenAndServe())
+		log.WithFields(log.Fields{
+			"socket": cfg.Listener.DebugAddr,
+		}).Debugf("Listening to Debug HTTP socket")
+
+		err = debugSvc.ListenAndServe()
+		log.WithFields(log.Fields{
+			"reason": err,
+		}).Fatal("Error listening Debug HTTP socket")
 	}()
 
 	// Run http listeners
@@ -110,8 +164,14 @@ func main() {
 		Handler: acm.HTTPHandler(svc),
 	}
 	go func() {
-		log.Printf("Listening to Service HTTP socket: %s", cfg.Listener.HTTPAddr)
-		log.Fatalf("Error listening Service HTTP socket: %s", httpSvc.ListenAndServe())
+		log.WithFields(log.Fields{
+			"socket": cfg.Listener.HTTPAddr,
+		}).Info("Listening to Service HTTP socket")
+
+		err = httpSvc.ListenAndServe()
+		log.WithFields(log.Fields{
+			"reason": err,
+		}).Fatal("Error listening Service HTTP socket")
 	}()
 
 	// Configure TLS
@@ -144,6 +204,12 @@ func main() {
 		TLSConfig: tlsconf,
 		Handler:   middleware.Chain(svc, cfg.Listener.Middlewares...),
 	}
-	log.Printf("Listening to Service HTTPS socket: %s", cfg.Listener.HTTPSAddr)
-	log.Fatalf("Error listening HTTPS socket: %s", httpsSvc.ListenAndServeTLS("", ""))
+	log.WithFields(log.Fields{
+		"socket": cfg.Listener.HTTPSAddr,
+	}).Info("Listening to Service HTTPS socket")
+
+	err = httpsSvc.ListenAndServeTLS("", "")
+	log.WithFields(log.Fields{
+		"reason": err,
+	}).Fatal("Error listening HTTPS socket")
 }

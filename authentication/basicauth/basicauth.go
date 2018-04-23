@@ -2,8 +2,9 @@ package basicauth
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/teran/svcproxy/authentication"
 )
@@ -43,7 +44,7 @@ func NewBasicAuthBackend(name string, options map[string]string) (Backend, error
 	case "htpasswd":
 		passwdFile, ok := options["file"]
 		if !ok {
-			return nil, fmt.Errorf("file option must be passed to htpasswd backend but not specified")
+			return nil, fmt.Errorf("'file' option must be passed to htpasswd backend but not specified")
 		}
 		return &HTPasswd{
 			passwdFile: passwdFile,
@@ -61,7 +62,7 @@ func (ba *BasicAuth) IsAuthenticated(r *http.Request) bool {
 
 	ok, err := ba.backend.IsValidCredentials(username, password)
 	if err != nil {
-		log.Printf("Error verifying credentials: %s", err)
+		log.Warnf("Error verifying credentials: %s", err)
 		return false
 	}
 	if !ok {

@@ -9,6 +9,7 @@ import (
 // Config file definition
 type Config struct {
 	Listener Listener  `yaml:"listener"`
+	Logger   Logger    `yaml:"logger"`
 	Services []Service `yaml:"services"`
 	Autocert Autocert  `yaml:"autocert"`
 }
@@ -27,6 +28,12 @@ type Listener struct {
 	HTTPAddr    string              `yaml:"httpAddr" default:":80"`
 	HTTPSAddr   string              `yaml:"httpsAddr" default:":443"`
 	Middlewares []map[string]string `yaml:"middlewares"`
+}
+
+// Logger section of the configuration
+type Logger struct {
+	Formatter string `yaml:"formatter"`
+	Level     string `yaml:"level"`
 }
 
 // Service section of the configuration

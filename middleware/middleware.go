@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/teran/svcproxy/middleware/logging"
 	"github.com/teran/svcproxy/middleware/metrics"
@@ -24,7 +25,9 @@ func Chain(f http.Handler, ms ...map[string]string) http.Handler {
 		if !ok {
 			log.Fatalf("Middleware '%s' is requested but not registered.", name)
 		}
-		log.Printf("Chaining middleware %s", name)
+		log.WithFields(log.Fields{
+			"middleware": name,
+		}).Debugf("Middleware initialized")
 		f = fm(f, m)
 	}
 
