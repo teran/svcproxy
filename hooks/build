@@ -2,6 +2,9 @@
 
 echo "Build hook running"
 
+VSC_REF=$(git rev-parse --short HEAD)
+
 docker build --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-             --build-arg VCS_REF=`git rev-parse --short HEAD` \
-             -t $IMAGE_NAME .
+             --build-arg VCS_REF=${VSC_REF} \
+             -t "${IMAGE_NAME}:latest" \
+             -t "${IMAGE_NAME}:git${VSC_REF}" .

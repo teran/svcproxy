@@ -2,5 +2,4 @@
 
 echo "Post push hook running"
 
-docker tag $IMAGE_NAME $DOCKER_REPO:git$SOURCE_COMMIT
-docker push $DOCKER_REPO:git$SOURCE_COMMIT
+docker push $DOCKER_REPO
