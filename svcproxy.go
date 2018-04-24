@@ -150,7 +150,7 @@ func main() {
 	go func() {
 		log.WithFields(log.Fields{
 			"socket": cfg.Listener.DebugAddr,
-		}).Debugf("Listening to Debug HTTP socket")
+		}).Info("Listening to Debug HTTP socket")
 
 		err = debugSvc.ListenAndServe()
 		log.WithFields(log.Fields{
