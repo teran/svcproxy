@@ -161,7 +161,7 @@ func main() {
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:    cfg.Listener.HTTPAddr,
-		Handler: acm.HTTPHandler(svc),
+		Handler: middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
 	}
 	go func() {
 		log.WithFields(log.Fields{
