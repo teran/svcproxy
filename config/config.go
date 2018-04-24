@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/creasty/defaults"
 )
 
 // Config file definition
@@ -32,8 +34,8 @@ type Listener struct {
 
 // Logger section of the configuration
 type Logger struct {
-	Formatter string `yaml:"formatter"`
-	Level     string `yaml:"level"`
+	Formatter string `yaml:"formatter" default:"text"`
+	Level     string `yaml:"level" default:"debug"`
 }
 
 // Service section of the configuration
@@ -73,6 +75,10 @@ func read(path string) ([]byte, error) {
 
 func parse(spec []byte) (*Config, error) {
 	var config Config
+	if err := defaults.Set(&config); err != nil {
+		return nil, err
+	}
+
 	err := yaml.UnmarshalStrict(spec, &config)
 	if err != nil {
 		return nil, err
