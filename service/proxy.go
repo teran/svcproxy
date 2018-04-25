@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -9,12 +10,18 @@ import (
 )
 
 // NewProxy creates new Proxy instance
-func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication.Authenticator) (*Proxy, error) {
+func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication.Authenticator, logger *log.Logger) (*Proxy, error) {
+	rp := NewReverseProxy(backend)
+
+	if logger != nil {
+		rp.ErrorLog = logger
+	}
+
 	p := &Proxy{
 		Frontend:      frontend,
 		Backend:       backend,
 		Authenticator: authenticator,
-		proxy:         NewReverseProxy(backend),
+		proxy:         rp,
 	}
 	return p, nil
 }

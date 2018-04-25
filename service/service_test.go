@@ -33,7 +33,7 @@ func (s *ServiceTestSuite) TestService() {
 	b, err := NewBackend(testsrv.URL)
 	s.Require().NoError(err)
 
-	p, err := NewProxy(f, b, nil)
+	p, err := NewProxy(f, b, nil, nil)
 	s.Require().NoError(err)
 
 	svc.AddProxy(p)
@@ -77,7 +77,7 @@ func (s *ServiceTestSuite) TestServiceWithAuthenticator() {
 	a, err := factory.NewAuthenticator("BasicAuth", baOptions)
 	s.Require().NoError(err)
 
-	p, err := NewProxy(f, b, a)
+	p, err := NewProxy(f, b, a, nil)
 	s.Require().NoError(err)
 
 	svc.AddProxy(p)
@@ -118,7 +118,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 	b, err := NewBackend("http://localhost")
 	s.Require().NoError(err)
 
-	p, err := NewProxy(f, b, nil)
+	p, err := NewProxy(f, b, nil, nil)
 	s.Require().NoError(err)
 
 	svc.AddProxy(p)

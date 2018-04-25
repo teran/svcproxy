@@ -3,13 +3,14 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
+	stdlog "log"
 	"net/http"
 	"os"
 	"runtime"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/teran/svcproxy/authentication/factory"
 	"github.com/teran/svcproxy/autocert/cache"
 	"github.com/teran/svcproxy/config"
@@ -44,7 +45,12 @@ func main() {
 		log.Fatalf("Error creating service: %s", err)
 	}
 
+	var logger = log.New()
+	w := logger.Writer()
+	defer w.Close()
+
 	var hostsList []string
+
 	// Fill service instance with proxies
 	for _, sd := range cfg.Services {
 		for _, fqdn := range sd.Frontend.FQDN {
@@ -77,7 +83,7 @@ func main() {
 				continue
 			}
 
-			p, err := service.NewProxy(f, b, a)
+			p, err := service.NewProxy(f, b, a, stdlog.New(w, "", 0))
 			if err != nil {
 				log.WithFields(log.Fields{
 					"reason": err,
