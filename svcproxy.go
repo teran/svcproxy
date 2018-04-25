@@ -34,40 +34,9 @@ func main() {
 		}).Fatal("Error parsing configuration")
 	}
 
-	switch cfg.Logger.Formatter {
-	case "json":
-		log.SetFormatter(&log.JSONFormatter{})
-	case "text":
-		log.SetFormatter(&log.TextFormatter{})
-	default:
-		log.WithFields(log.Fields{
-			"reason": fmt.Sprintf("unknown formatter '%s'", cfg.Logger.Formatter),
-		}).Fatalf("Error configuring logger")
-	}
-
-	switch cfg.Logger.Level {
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	case "warning":
-		log.SetLevel(log.WarnLevel)
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	case "fatal":
-		log.SetLevel(log.FatalLevel)
-	case "panic":
-		log.SetLevel(log.PanicLevel)
-	default:
-		log.WithFields(log.Fields{
-			"reason": fmt.Sprintf("unknown log level '%s'", cfg.Logger.Level),
-		}).Fatalf("Error configuring logging level")
-	}
-
-	log.WithFields(log.Fields{
-		"version": Version,
-	}).Infof("Launching svcproxy...")
-	log.Debugf("Built with %s", runtime.Version())
+	setLogFormatter(cfg.Logger.Formatter)
+	setLogLevel(cfg.Logger.Level)
+	logStartupHeader()
 
 	// Create service instance
 	svc, err := service.NewService()
@@ -76,7 +45,6 @@ func main() {
 	}
 
 	var hostsList []string
-
 	// Fill service instance with proxies
 	for _, sd := range cfg.Services {
 		for _, fqdn := range sd.Frontend.FQDN {
@@ -123,13 +91,7 @@ func main() {
 		}
 	}
 
-	// Initialize caching subsystem
-	cache, err := cache.NewCacheFactory(cfg.Autocert.Cache.Backend, cfg.Autocert.Cache.BackendOptions)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"reason": err,
-		}).Fatal("Error: unable to initialize autocert cache")
-	}
+	cache := initializeCache(cfg.Autocert.Cache.Backend, cfg.Autocert.Cache.BackendOptions)
 
 	log.Debug("Loaded proxies for hosts:")
 	for _, host := range hostsList {
@@ -212,4 +174,57 @@ func main() {
 	log.WithFields(log.Fields{
 		"reason": err,
 	}).Fatal("Error listening HTTPS socket")
+}
+
+func setLogFormatter(formatter string) {
+	switch formatter {
+	case "json":
+		log.SetFormatter(&log.JSONFormatter{})
+	case "text":
+		log.SetFormatter(&log.TextFormatter{})
+	default:
+		log.WithFields(log.Fields{
+			"reason": fmt.Sprintf("unknown formatter '%s'", formatter),
+		}).Fatalf("Error configuring logger")
+	}
+}
+
+func initializeCache(backend string, options map[string]string) autocert.Cache {
+	// Initialize caching subsystem
+	cache, err := cache.NewCacheFactory(backend, options)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"reason": err,
+		}).Fatal("Error: unable to initialize autocert cache")
+	}
+
+	return cache
+}
+
+func setLogLevel(level string) {
+	switch level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warning":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	case "panic":
+		log.SetLevel(log.PanicLevel)
+	default:
+		log.WithFields(log.Fields{
+			"reason": fmt.Sprintf("unknown log level '%s'", level),
+		}).Fatalf("Error configuring logging level")
+	}
+}
+
+func logStartupHeader() {
+	log.WithFields(log.Fields{
+		"version": Version,
+	}).Infof("Launching svcproxy...")
+	log.Debugf("Built with %s", runtime.Version())
 }
