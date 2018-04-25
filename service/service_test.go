@@ -72,7 +72,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 
 	result := w.Result()
 	s.Equal(http.StatusFound, result.StatusCode)
-	s.Equal("header-value", result.Header.Get("X-Blah"))
+	s.Equal("", result.Header.Get("X-Blah"))
 	s.Equal("https://test.local/blah?getVar=getValue&getVar2=getValue2", result.Header.Get("Location"))
 }
 

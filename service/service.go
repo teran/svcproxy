@@ -38,17 +38,6 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if p.Authenticator != nil {
-		if !p.Authenticator.IsAuthenticated(r) {
-			p.Authenticator.Authenticate(w, r)
-			return
-		}
-	}
-
-	for k, v := range p.Frontend.ResponseHTTPHeaders {
-		w.Header().Set(k, v)
-	}
-
 	// Handle plain HTTP requests
 	if r.TLS == nil {
 		switch p.Frontend.HTTPHandler {
@@ -73,6 +62,17 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, redirURL.String(), http.StatusFound)
 			return
 		}
+	}
+
+	if p.Authenticator != nil {
+		if !p.Authenticator.IsAuthenticated(r) {
+			p.Authenticator.Authenticate(w, r)
+			return
+		}
+	}
+
+	for k, v := range p.Frontend.ResponseHTTPHeaders {
+		w.Header().Set(k, v)
 	}
 
 	p.proxy.ServeHTTP(w, r)
