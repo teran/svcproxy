@@ -22,8 +22,7 @@ type Backend interface {
 // BasicAuth implements Authenticator interface
 // to provide Basic authenication mechanism(rfc2617)
 type BasicAuth struct {
-	passwdFile string
-	backend    Backend
+	backend Backend
 }
 
 // NewBasicAuth creates new BasicAuth object with requested backend
