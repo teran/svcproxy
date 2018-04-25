@@ -60,7 +60,7 @@ func NewMetricsMiddleware() *Metrics {
 
 	m.responseDurationSeconds = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "response_duration_seconds",
+			Name:    "http_response_duration_seconds",
 			Help:    "A histogram of request latencies.",
 			Buckets: prometheus.DefBuckets,
 		},
@@ -69,7 +69,7 @@ func NewMetricsMiddleware() *Metrics {
 
 	m.writeHeaderDurationSeconds = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "write_header_duration_seconds",
+			Name:    "http_write_header_duration_seconds",
 			Help:    "A histogram of time to first write latencies.",
 			Buckets: prometheus.DefBuckets,
 		},
@@ -78,7 +78,7 @@ func NewMetricsMiddleware() *Metrics {
 
 	m.requestSizeBytes = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "request_size_bytes",
+			Name:    "http_request_size_bytes",
 			Help:    "A histogram of request sizes.",
 			Buckets: []float64{50, 200, 500, 900, 1500},
 		},
@@ -87,7 +87,7 @@ func NewMetricsMiddleware() *Metrics {
 
 	m.responseSizeBytes = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "response_size_bytes",
+			Name:    "http_response_size_bytes",
 			Help:    "A histogram of response sizes.",
 			Buckets: []float64{50, 200, 500, 900, 1500},
 		},
