@@ -13,14 +13,18 @@ var _ Backend = &HTPasswd{}
 
 // HTPasswd backend type
 type HTPasswd struct {
-	passwdFile string
+	cache map[string]string
 }
 
-// IsValidCredentials checks client's credentials against htpasswd file
-func (h *HTPasswd) IsValidCredentials(username, password string) (bool, error) {
-	fp, err := os.Open(h.passwdFile)
+// NewHTPasswdBackend returns HTPasswd instance
+func NewHTPasswdBackend(passwdFile string) (Backend, error) {
+	h := &HTPasswd{
+		cache: make(map[string]string),
+	}
+
+	fp, err := os.Open(passwdFile)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	defer fp.Close()
 
@@ -29,14 +33,24 @@ func (h *HTPasswd) IsValidCredentials(username, password string) (bool, error) {
 		line := scanner.Text()
 		credentials := strings.Split(line, ":")
 		if len(credentials) != 2 {
-			return false, fmt.Errorf("BasicAuth htpasswd authenticator error: passwd file '%s' mailformed", h.passwdFile)
+			return nil, fmt.Errorf("BasicAuth htpasswd authenticator error: passwd file '%s' mailformed", passwdFile)
 		}
-		if username == credentials[0] {
-			if err := bcrypt.CompareHashAndPassword([]byte(credentials[1]), []byte(password)); err == nil {
-				return true, nil
-			}
-			return false, nil
-		}
+
+		h.cache[credentials[0]] = credentials[1]
+	}
+
+	return h, nil
+}
+
+// IsValidCredentials checks client's credentials against htpasswd file
+func (h *HTPasswd) IsValidCredentials(username, password string) (bool, error) {
+	cp, ok := h.cache[username]
+	if !ok {
+		return false, nil
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(cp), []byte(password)); err == nil {
+		return true, nil
 	}
 
 	return false, nil

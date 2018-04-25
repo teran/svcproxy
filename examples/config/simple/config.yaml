@@ -83,4 +83,4 @@ services:
       # - file(used by htpasswd backend), path to htpasswd file
       options:
         backend: htpasswd
-        file: /etc/svcproxy/htpasswd
+        file: examples/config/simple/htpasswd

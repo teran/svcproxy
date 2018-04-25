@@ -46,9 +46,7 @@ func NewBasicAuthBackend(name string, options map[string]string) (Backend, error
 		if !ok {
 			return nil, fmt.Errorf("'file' option must be passed to htpasswd backend but not specified")
 		}
-		return &HTPasswd{
-			passwdFile: passwdFile,
-		}, nil
+		return NewHTPasswdBackend(passwdFile)
 	}
 	return nil, fmt.Errorf("Unknown backend: %s", name)
 }
