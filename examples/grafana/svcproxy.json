@@ -49,6 +49,39 @@
   "links": [],
   "panels": [
     {
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                10
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A",
+                "1m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "min"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "60s",
+        "handler": 1,
+        "name": "Response by code alert",
+        "noDataState": "alerting",
+        "notifications": []
+      },
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -85,14 +118,22 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_duration_seconds_sum{app=\"svcproxy\"}[5m])) by (code)",
+          "expr": "sum(irate(http_request_size_bytes_bucket{app=\"svcproxy\"}[5m])) by (code)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "http/{{code}}",
+          "legendFormat": "http/{{ code }}",
           "refId": "A"
         }
       ],
-      "thresholds": [],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 10
+        }
+      ],
       "timeFrom": null,
       "timeShift": null,
       "title": "Response by code",
@@ -263,14 +304,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_duration_seconds_sum[5m]))",
+          "expr": "sum(irate(http_response_duration_seconds_sum[5m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "response duration",
           "refId": "C"
         },
         {
-          "expr": "(sum(rate(request_size_bytes_sum{app=\"svcproxy\"}[5m]))+sum(rate(response_size_bytes_sum{app=\"svcproxy\"}[5m])))",
+          "expr": "(sum(rate(http_request_size_bytes_sum{app=\"svcproxy\"}[5m]))+sum(rate(http_response_size_bytes_sum{app=\"svcproxy\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -477,35 +518,35 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.1, sum(irate(response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.1, sum(irate(http_response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "1/10 𝜑",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.25, sum(irate(response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.25, sum(irate(http_response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "1/4 𝜑",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.5, sum(irate(response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.5, sum(irate(http_response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "1/2 𝜑",
           "refId": "C"
         },
         {
-          "expr": "histogram_quantile(0.75, sum(irate(response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.75, sum(irate(http_response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "3/4 𝜑",
           "refId": "D"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(irate(response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(irate(http_response_duration_seconds_bucket{app=\"svcproxy\"}[5m])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": ".99  𝜑",
@@ -597,14 +638,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(request_size_bytes_sum{app=\"svcproxy\"}[5m]))",
+          "expr": "sum(rate(http_request_size_bytes_sum{app=\"svcproxy\"}[5m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "request",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(response_size_bytes_sum{app=\"svcproxy\"}[5m]))",
+          "expr": "sum(rate(http_response_size_bytes_sum{app=\"svcproxy\"}[5m]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "response",
@@ -1250,7 +1291,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "bytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1444,7 +1485,7 @@
       ]
     }
   ],
-  "refresh": "10s",
+  "refresh": "5s",
   "schemaVersion": 16,
   "style": "dark",
   "tags": [
@@ -1454,7 +1495,7 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {
@@ -1485,5 +1526,5 @@
   "timezone": "",
   "title": "svcproxy",
   "uid": "e9HI3gWmz",
-  "version": 91
+  "version": 101
 }
