@@ -6,23 +6,25 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/teran/svcproxy/middleware/types"
 )
 
-// ResponseWriterWithStatus implements adding status code to ResponseWriter object
-type ResponseWriterWithStatus struct {
-	http.ResponseWriter
-	Status int
+var _ types.Middleware = &Logging{}
+
+// Logging middleware type
+type Logging struct{}
+
+// NewMiddleware returns new Middleware instance
+func NewMiddleware() *Logging {
+	return &Logging{}
 }
 
-// WriteHeader reimplements WriteHeader() to fill status automatically
-func (rw *ResponseWriterWithStatus) WriteHeader(status int) {
-	rw.Status = status
-	rw.ResponseWriter.WriteHeader(status)
-}
+// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
+func (l *Logging) SetOptions(_ map[string]interface{}) {}
 
 // Middleware wraps Handler to log it's request/response metrics
 // such as response HTTP status, payload length, time spent.
-func Middleware(next http.Handler, _ map[string]string) http.Handler {
+func (l *Logging) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := ResponseWriterWithStatus{ResponseWriter: w}
 		start := time.Now()
@@ -53,4 +55,16 @@ func Middleware(next http.Handler, _ map[string]string) http.Handler {
 			"request_length":  r.ContentLength,
 		}).Info("Request handled")
 	})
+}
+
+// ResponseWriterWithStatus implements adding status code to ResponseWriter object
+type ResponseWriterWithStatus struct {
+	http.ResponseWriter
+	Status int
+}
+
+// WriteHeader reimplements WriteHeader() to fill status automatically
+func (rw *ResponseWriterWithStatus) WriteHeader(status int) {
+	rw.Status = status
+	rw.ResponseWriter.WriteHeader(status)
 }

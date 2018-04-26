@@ -29,11 +29,19 @@ listener:
   httpsAddr: :8443
   # Middlewares list to apply to each request passing through HTTPS socket
   # Available options:
+  # - filter
   # - logging
   # - metrics
   # NOTE: amount of middlewares could affect performance and
   #       increase response time.
   middlewares:
+    - name: filter
+      rules:
+        - ips:
+           - "127.0.0.1"
+           - "::1"
+          userAgents:
+            - "blah (Mozilla 5.0)"
     - name: logging
     - name: metrics
 logger:
@@ -101,7 +109,7 @@ services:
       # - file(used by htpasswd backend), path to htpasswd file
       options:
         backend: htpasswd
-        file: /etc/svcproxy/htpasswd
+        file: examples/config/simple/htpasswd
 ```
 
 

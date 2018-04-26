@@ -6,7 +6,10 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/teran/svcproxy/middleware/types"
 )
+
+var _ types.Middleware = &Metrics{}
 
 // Metrics type
 type Metrics struct {
@@ -41,8 +44,8 @@ func (rw *ResponseWriterWithStatus) Write(b []byte) (int, error) {
 	return n, err
 }
 
-// NewMetricsMiddleware returns new Middleware
-func NewMetricsMiddleware() *Metrics {
+// NewMiddleware returns new Middleware instance
+func NewMiddleware() *Metrics {
 	m := Metrics{}
 
 	m.inFlightRequests = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -104,8 +107,11 @@ func NewMetricsMiddleware() *Metrics {
 	return &m
 }
 
+// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
+func (m *Metrics) SetOptions(_ map[string]interface{}) {}
+
 // Middleware wraps Handler to obtain metrics
-func (m *Metrics) Middleware(next http.Handler, _ map[string]string) http.Handler {
+func (m *Metrics) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		rw := ResponseWriterWithStatus{
