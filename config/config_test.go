@@ -30,6 +30,6 @@ func (s *ServiceTestSuite) SetupTest() {
 
 }
 
-func TestMyServiceTestSuite(t *testing.T) {
+func TestServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(ServiceTestSuite))
 }

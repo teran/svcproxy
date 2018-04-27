@@ -31,6 +31,6 @@ func (s *NoAuthTestSuite) TestNoAuth() {
 	s.Equal(http.StatusCreated, resp.StatusCode)
 }
 
-func TestMyNoAuthTestSuite(t *testing.T) {
+func TestNoAuthTestSuite(t *testing.T) {
 	suite.Run(t, new(NoAuthTestSuite))
 }

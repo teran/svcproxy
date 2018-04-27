@@ -136,6 +136,6 @@ func (s *ServiceTestSuite) TestRedirect() {
 	s.Equal("https://test.local/blah?getVar=getValue&getVar2=getValue2", result.Header.Get("Location"))
 }
 
-func TestMyServiceTestSuite(t *testing.T) {
+func TestServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(ServiceTestSuite))
 }

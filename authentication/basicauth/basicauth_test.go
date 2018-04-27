@@ -108,6 +108,6 @@ func (s *BasicAuthTestSuite) SetupTest() {
 	s.Require().NoError(err)
 }
 
-func TestMyBasicAuthTestSuite(t *testing.T) {
+func TestBasicAuthTestSuite(t *testing.T) {
 	suite.Run(t, new(BasicAuthTestSuite))
 }
