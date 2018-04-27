@@ -3,6 +3,7 @@ package filter
 import (
 	"net"
 	"net/http"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/teran/svcproxy/middleware/types"
@@ -26,7 +27,7 @@ type Options struct {
 type Rule struct {
 	Logic      string
 	IPs        []string
-	UserAgents []string
+	UserAgents []*regexp.Regexp
 }
 
 // NewMiddleware returns new Middleware instance
@@ -53,9 +54,14 @@ func (f *Filter) SetOptions(options map[string]interface{}) {
 
 			useragents, ok := x.(map[interface{}]interface{})["userAgents"]
 			if ok {
-				var uaList []string
+				var uaList []*regexp.Regexp
 				for _, ua := range useragents.([]interface{}) {
-					uaList = append(uaList, ua.(string))
+					uaStr := ua.(string)
+					pattern, err := regexp.Compile(uaStr)
+					if err != nil {
+						log.Fatalf("Error compiling regexp: %s", uaStr)
+					}
+					uaList = append(uaList, pattern)
 				}
 				rule.UserAgents = uaList
 			}
@@ -106,9 +112,9 @@ func isIPBlacklisted(sourceIP string, filterList []string) bool {
 	return false
 }
 
-func isUserAgentBlacklisted(sourceUserAgent string, userAgentFilterList []string) bool {
+func isUserAgentBlacklisted(sourceUserAgent string, userAgentFilterList []*regexp.Regexp) bool {
 	for _, userAgent := range userAgentFilterList {
-		if sourceUserAgent == userAgent {
+		if userAgent.MatchString(sourceUserAgent) {
 			return true
 		}
 	}
