@@ -12,46 +12,146 @@ type FilterTestSuite struct {
 	suite.Suite
 }
 
-func (s *FilterTestSuite) TestFilter() {
-	f := NewMiddleware()
-	f.SetOptions(map[string]interface{}{
-		"name": "filter",
-		"rules": []interface{}{
-			map[interface{}]interface{}{
-				"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+type testCase struct {
+	options        map[string]interface{}
+	caseIPAddr     string
+	caseUAString   string
+	expectedStatus int
+}
+
+func (s FilterTestSuite) TestAll() {
+	// Define test cases
+	tcs := []testCase{
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
 			},
+			caseIPAddr:     "127.0.0.1:49000",
+			caseUAString:   "SomeBrowser",
+			expectedStatus: http.StatusNoContent,
 		},
-	})
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.1:49000",
+			caseUAString:   "blah 1.0",
+			expectedStatus: http.StatusServiceUnavailable,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips": []interface{}{"127.0.0.1"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.1:49000",
+			caseUAString:   "blah 1.0",
+			expectedStatus: http.StatusServiceUnavailable,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips": []interface{}{"127.0.0.1"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.2:49000",
+			caseUAString:   "blah 1.0",
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips":        []interface{}{"127.0.0.1"},
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.1:49000",
+			caseUAString:   "SomeBrowser",
+			expectedStatus: http.StatusServiceUnavailable,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips":        []interface{}{"127.0.0.1"},
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.2:49000",
+			caseUAString:   "blah 1.0",
+			expectedStatus: http.StatusServiceUnavailable,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips":        []interface{}{"127.0.0.1"},
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.1:49000",
+			caseUAString:   "blah 1.0",
+			expectedStatus: http.StatusServiceUnavailable,
+		},
+		{
+			options: map[string]interface{}{
+				"name": "filter",
+				"rules": []interface{}{
+					map[interface{}]interface{}{
+						"ips":        []interface{}{"127.0.0.1"},
+						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+					},
+				},
+			},
+			caseIPAddr:     "127.0.0.2:49000",
+			caseUAString:   "SomeBrowser",
+			expectedStatus: http.StatusNoContent,
+		},
+	}
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	// Test successful pass
-	w := httptest.NewRecorder()
-	r, err := http.NewRequest("GET", "/", nil)
-	s.Require().NoError(err)
-	r.RemoteAddr = "127.0.0.1:4443"
+	for _, c := range tcs {
+		f := NewMiddleware()
+		f.SetOptions(c.options)
 
-	f.Middleware(next).ServeHTTP(w, r)
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest("GET", "/", nil)
+		s.NoError(err)
+		r.RemoteAddr = c.caseIPAddr
+		r.Header.Set("User-Agent", c.caseUAString)
 
-	resp := w.Result()
+		f.Middleware(next).ServeHTTP(w, r)
 
-	s.Equal(http.StatusNoContent, resp.StatusCode)
+		resp := w.Result()
 
-	// Test filtered request
-	w = httptest.NewRecorder()
-	r, err = http.NewRequest("GET", "/", nil)
-	s.Require().NoError(err)
-
-	r.RemoteAddr = "127.0.0.1:4443"
-	r.Header.Set("User-Agent", "blah 1.0")
-
-	f.Middleware(next).ServeHTTP(w, r)
-
-	resp = w.Result()
-
-	s.Equal(http.StatusServiceUnavailable, resp.StatusCode)
+		s.Equal(c.expectedStatus, resp.StatusCode)
+	}
 }
 
 func TestFilterTestSuite(t *testing.T) {
