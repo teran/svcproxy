@@ -3,6 +3,7 @@ package metrics
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -113,11 +114,12 @@ func (m *Metrics) SetOptions(_ map[string]interface{}) {}
 // Middleware wraps Handler to obtain metrics
 func (m *Metrics) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hostName := strings.ToLower(r.Host)
 		now := time.Now()
 		rw := ResponseWriterWithStatus{
 			ResponseWriter: w,
 			ObserveWriteHeaderFunc: func(status int) {
-				m.writeHeaderDurationSeconds.WithLabelValues(r.Host, strconv.Itoa(status), r.Method).Observe(time.Since(now).Seconds())
+				m.writeHeaderDurationSeconds.WithLabelValues(hostName, strconv.Itoa(status), r.Method).Observe(time.Since(now).Seconds())
 			},
 		}
 
@@ -128,10 +130,10 @@ func (m *Metrics) Middleware(next http.Handler) http.Handler {
 
 		statusCode := strconv.Itoa(rw.Status)
 
-		m.responseDurationSeconds.WithLabelValues(r.Host, statusCode, r.Method).Observe(time.Since(now).Seconds())
-		m.httpRequestsTotal.WithLabelValues(r.Host, statusCode, r.Method).Inc()
-		m.requestSizeBytes.WithLabelValues(r.Host, statusCode, r.Method).Observe(float64(calculateRequestSize(r)))
-		m.responseSizeBytes.WithLabelValues(r.Host, statusCode, r.Method).Observe(float64(rw.Written))
+		m.responseDurationSeconds.WithLabelValues(hostName, statusCode, r.Method).Observe(time.Since(now).Seconds())
+		m.httpRequestsTotal.WithLabelValues(hostName, statusCode, r.Method).Inc()
+		m.requestSizeBytes.WithLabelValues(hostName, statusCode, r.Method).Observe(float64(calculateRequestSize(r)))
+		m.responseSizeBytes.WithLabelValues(hostName, statusCode, r.Method).Observe(float64(rw.Written))
 	})
 }
 

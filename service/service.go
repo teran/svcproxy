@@ -27,12 +27,13 @@ func NewService() (*Svc, error) {
 
 // AddProxy adds proxy to the service
 func (s *Svc) AddProxy(p *Proxy) error {
-	s.proxies[p.Frontend.FQDN] = p
+	s.proxies[strings.ToLower(p.Frontend.FQDN)] = p
 	return nil
 }
 
 func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p, ok := s.proxies[r.Host]
+	hostName := strings.ToLower(r.Host)
+	p, ok := s.proxies[hostName]
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -45,11 +46,11 @@ func (s *Svc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		case "redirect":
-			host, _, err := net.SplitHostPort(r.Host)
+			host, _, err := net.SplitHostPort(hostName)
 			if err != nil {
 				// absence of port in address causes error in SplitHostPort()
 				// so hope, it's our case :)
-				host = r.Host
+				host = hostName
 			}
 
 			redirURL := &url.URL{

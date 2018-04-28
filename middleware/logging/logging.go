@@ -3,6 +3,7 @@ package logging
 import (
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -40,7 +41,7 @@ func (l *Logging) Middleware(next http.Handler) http.Handler {
 		}
 
 		log.WithFields(log.Fields{
-			"host":            r.Host,
+			"host":            strings.ToLower(r.Host),
 			"remote_addr":     remoteAddr,
 			"forwarded_for":   r.Header.Get("X-Forwarded-For"),
 			"forwarded_proto": r.Header.Get("X-Forwarded-Proto"),
