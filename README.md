@@ -50,6 +50,15 @@ logger:
   # Log verbosity. Available options are: debug, info, warning, error, fatal, panic
   level: debug
 autocert:
+  # Email optionally specifies a contact email address.
+  # This is used by CAs, such as Let's Encrypt, to notify about problems
+  # with issued certificates.
+  email: test@example.com
+  # CA Directory endpoint URL
+  # Could be left empty or not specified to use Let's Encrypt
+  # Default: https://acme-v01.api.letsencrypt.org/directory
+  directoryURL: "https://acme-v01.api.letsencrypt.org/directory"
+  # Local cache settings
   cache:
     # Cache backend to use
     # Currently available:
