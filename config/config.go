@@ -18,6 +18,7 @@ type Config struct {
 
 // Autocert configuration
 type Autocert struct {
+	Email string `yaml:"email"`
 	Cache struct {
 		Backend        string            `yaml:"backend"`
 		BackendOptions map[string]string `yaml:"backendOptions"`

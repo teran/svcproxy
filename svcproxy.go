@@ -106,6 +106,7 @@ func main() {
 
 	// Initialize autocert
 	acm := &autocert.Manager{
+		Email:      cfg.Autocert.Email,
 		Cache:      cache,
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(hostsList...),
