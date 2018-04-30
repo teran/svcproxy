@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 
@@ -28,7 +29,23 @@ type Autocert struct {
 
 // Listener section of the configuration
 type Listener struct {
-	DebugAddr   string                   `yaml:"debugAddr" default:"8081"`
+	Backend struct {
+		DualStack             bool          `yaml:"dualStack" default:"true"`
+		Timeout               time.Duration `yaml:"timeout" default:"10s"`
+		KeepAlive             time.Duration `yaml:"keepAlive" default:"30s"`
+		ExpectContinueTimeout time.Duration `yaml:"expectContinueTimeout" default:"5s"`
+		IdleConnTimeout       time.Duration `yaml:"idleConnTimeout" default:"10s"`
+		MaxIdleConns          int           `yaml:"maxIdleConns" default:"100"`
+		ResponseHeaderTimeout time.Duration `yaml:"responseHeaderTimeout" default:"10s"`
+		TLSHandshakeTimeout   time.Duration `yaml:"tlsHandshakeTimeout" default:"3s"`
+	} `yaml:"backend"`
+	DebugAddr string `yaml:"debugAddr" default:"8081"`
+	Frontend  struct {
+		IdleTimeout       time.Duration `yaml:"idleTimeout" default:"5s"`
+		ReadHeaderTimeout time.Duration `yaml:"readHeaderTimeout" default:"3s"`
+		ReadTimeout       time.Duration `yaml:"readTimeout" default:"10s"`
+		WriteTimeout      time.Duration `yaml:"writeTimeout" default:"10s"`
+	} `yaml:"frontend"`
 	HTTPAddr    string                   `yaml:"httpAddr" default:":80"`
 	HTTPSAddr   string                   `yaml:"httpsAddr" default:":443"`
 	Middlewares []map[string]interface{} `yaml:"middlewares"`

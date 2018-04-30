@@ -10,8 +10,8 @@ import (
 )
 
 // NewProxy creates new Proxy instance
-func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication.Authenticator, logger *log.Logger) (*Proxy, error) {
-	rp := NewReverseProxy(backend)
+func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication.Authenticator, transport http.RoundTripper, logger *log.Logger) (*Proxy, error) {
+	rp := NewReverseProxy(backend, transport)
 
 	if logger != nil {
 		rp.ErrorLog = logger
@@ -27,7 +27,7 @@ func NewProxy(frontend *Frontend, backend *Backend, authenticator authentication
 }
 
 // NewReverseProxy returns httputil.ReverseProxy object for particular backend
-func NewReverseProxy(backend *Backend) *httputil.ReverseProxy {
+func NewReverseProxy(backend *Backend, transport http.RoundTripper) *httputil.ReverseProxy {
 	director := func(r *http.Request) {
 		r.URL.Scheme = backend.URL.Scheme
 		r.URL.Host = backend.URL.Host
@@ -54,5 +54,8 @@ func NewReverseProxy(backend *Backend) *httputil.ReverseProxy {
 		r.Header.Set("X-Proxy-App", "svcproxy")
 	}
 
-	return &httputil.ReverseProxy{Director: director}
+	return &httputil.ReverseProxy{
+		Director:  director,
+		Transport: transport,
+	}
 }

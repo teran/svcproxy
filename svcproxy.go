@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	stdlog "log"
+	"net"
 	"net/http"
 	"os"
 	"runtime"
@@ -84,7 +85,21 @@ func main() {
 				continue
 			}
 
-			p, err := service.NewProxy(f, b, a, stdlog.New(w, "", 0))
+			transport := &http.Transport{
+				DialContext: (&net.Dialer{
+					Timeout:   cfg.Listener.Backend.Timeout,
+					KeepAlive: cfg.Listener.Backend.KeepAlive,
+					DualStack: cfg.Listener.Backend.DualStack,
+				}).DialContext,
+				ExpectContinueTimeout: cfg.Listener.Backend.ExpectContinueTimeout,
+				IdleConnTimeout:       cfg.Listener.Backend.IdleConnTimeout,
+				MaxIdleConns:          cfg.Listener.Backend.MaxIdleConns,
+				Proxy:                 http.ProxyFromEnvironment,
+				ResponseHeaderTimeout: cfg.Listener.Backend.ResponseHeaderTimeout,
+				TLSHandshakeTimeout:   cfg.Listener.Backend.TLSHandshakeTimeout,
+			}
+
+			p, err := service.NewProxy(f, b, a, transport, stdlog.New(w, "", 0))
 			if err != nil {
 				log.WithFields(log.Fields{
 					"reason": err,
@@ -131,8 +146,12 @@ func main() {
 
 	// Run http listeners
 	httpSvc := &http.Server{
-		Addr:    cfg.Listener.HTTPAddr,
-		Handler: middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
+		Addr:              cfg.Listener.HTTPAddr,
+		Handler:           middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
+		IdleTimeout:       cfg.Listener.Frontend.IdleTimeout,
+		ReadHeaderTimeout: cfg.Listener.Frontend.ReadHeaderTimeout,
+		ReadTimeout:       cfg.Listener.Frontend.ReadTimeout,
+		WriteTimeout:      cfg.Listener.Frontend.WriteTimeout,
 	}
 	go func() {
 		log.WithFields(log.Fields{
@@ -171,9 +190,13 @@ func main() {
 
 	// Run HTTPS listener
 	httpsSvc := &http.Server{
-		Addr:      cfg.Listener.HTTPSAddr,
-		TLSConfig: tlsconf,
-		Handler:   middleware.Chain(svc, cfg.Listener.Middlewares...),
+		Addr:              cfg.Listener.HTTPSAddr,
+		Handler:           middleware.Chain(svc, cfg.Listener.Middlewares...),
+		TLSConfig:         tlsconf,
+		IdleTimeout:       cfg.Listener.Frontend.IdleTimeout,
+		ReadHeaderTimeout: cfg.Listener.Frontend.ReadHeaderTimeout,
+		ReadTimeout:       cfg.Listener.Frontend.ReadTimeout,
+		WriteTimeout:      cfg.Listener.Frontend.WriteTimeout,
 	}
 	log.WithFields(log.Fields{
 		"socket": cfg.Listener.HTTPSAddr,

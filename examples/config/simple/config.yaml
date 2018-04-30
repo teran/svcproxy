@@ -9,6 +9,50 @@ listener:
   httpAddr: :8080
   # Which address to listen for HTTPS requests
   httpsAddr: :8443
+  # Frontend global settings
+  frontend:
+    # idleTimeout is passed as IdleTimeout to http.Server which is described as:
+    #   IdleTimeout is the maximum amount of time to wait for the
+    #   next request when keep-alives are enabled. If IdleTimeout
+    #   is zero, the value of ReadTimeout is used. If both are
+    #   zero, ReadHeaderTimeout is used.
+    idleTimeout: 5s
+    # readHeaderTimeout is passed as ReadHeaderTimeout to http.Server which is
+    # described as:
+    #   ReadHeaderTimeout is the amount of time allowed to read
+    #   request headers. The connection's read deadline is reset
+    #   after reading the headers and the Handler can decide what
+    #   is considered too slow for the body.
+    readHeaderTimeout: 3s
+    # readTimeout is passed as ReadTimeout to http.Server which is described as:
+    #   ReadTimeout is the maximum duration for reading the entire
+    #   request, including the body.
+    #
+    #   Because ReadTimeout does not let Handlers make per-request
+    #   decisions on each request body's acceptable deadline or
+    #   upload rate, most users will prefer to use
+    #   ReadHeaderTimeout. It is valid to use them both.
+    readTimeout: 5s
+    # writeTimeout is passed as WriteTimeout to http.Server which is described as:
+    #   WriteTimeout is the maximum duration before timing out
+    #   writes of the response. It is reset whenever a new
+    #   request's header is read. Like ReadTimeout, it does not
+    #   let Handlers make decisions on a per-request basis.
+    writeTimeout: 10s
+  # Backend global settings
+  backend:
+    # More details about the following options could be found at:
+    #   https://golang.org/pkg/net/#Dialer
+    dualStack: true
+    timeout: 10s
+    keepAlive: 30s
+    # More details about the following options could be found at:
+    #   https://golang.org/pkg/net/http/#Transport
+    expectContinueTimeout: 5s
+    idleConnTimeout: 10s
+    maxIdleConns: 10
+    responseHeaderTimeout: 10s
+    tlsHandshakeTimeout: 10s
   # Middlewares list to apply to each request passing through HTTPS socket
   # Available options:
   # - filter
