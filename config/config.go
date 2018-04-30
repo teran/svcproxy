@@ -18,8 +18,9 @@ type Config struct {
 
 // Autocert configuration
 type Autocert struct {
-	Email string `yaml:"email"`
-	Cache struct {
+	Email        string `yaml:"email"`
+	DirectoryURL string `yaml:"directoryURL" default:"https://acme-v01.api.letsencrypt.org/directory"`
+	Cache        struct {
 		Backend        string            `yaml:"backend"`
 		BackendOptions map[string]string `yaml:"backendOptions"`
 	} `yaml:"cache"`

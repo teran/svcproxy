@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 
+	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
 
 	log "github.com/sirupsen/logrus"
@@ -108,6 +109,7 @@ func main() {
 	acm := &autocert.Manager{
 		Email:      cfg.Autocert.Email,
 		Cache:      cache,
+		Client:     &acme.Client{DirectoryURL: cfg.Autocert.DirectoryURL},
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(hostsList...),
 	}
