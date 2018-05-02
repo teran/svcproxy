@@ -196,9 +196,9 @@ with svcproxy, but could be easily obtained from packge repositories like `Homeb
 
 # Using as library
 
-Some parts of svcproxy like `autocert.Cache` implementations are awesome to be used as
+Some parts of svcproxy like [autocert.Cache](https://godoc.org/golang.org/x/crypto/acme/autocert#Cache) implementations are awesome to be used as
 libraries in some third-party software. Since all the cache subsystem is layered and implemented as
-`autocert.Cache` on all of the layers it could be easily used in any of the following ways:
+[autocert.Cache](https://godoc.org/golang.org/x/crypto/acme/autocert#Cache) on all of the layers it could be easily used in any of the following ways:
 
 ```
 import "github.com/teran/svcproxy/autocert/cache"
