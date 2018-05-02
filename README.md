@@ -194,6 +194,34 @@ htpasswd -Bc <filename> <username>
 Please note, `htpasswd` CLI is not vendored with Docker image or in any other way
 with svcproxy, but could be easily obtained from packge repositories like `Homebrew`, `ubuntu.archive.com`, etc.
 
+# Using as library
+
+Some parts of svcproxy like `autocert.Cache` implementations are awesome to be used as
+libraries in some third-party software. Since all the cache subsystem is layered and implemented as
+`autocert.Cache` on all of the layers it could be easily used in any of the following ways:
+
+```
+import "github.com/teran/svcproxy/autocert/cache"
+
+....
+c, err := cache.NewCacheFactory(.......)
+....
+```
+
+```
+import "github.com/teran/svcproxy/autocert/cache/redis"
+
+....
+c, err := redis.NewCache(.......)
+....
+```
+
+Please note, using higher level `github.com/teran/svcproxy/autocert/cache.Cache` instance
+will enable encryption and precaching for your app.
+
+Feel free to take a look at [GoDoc](https://godoc.org/github.com/teran/svcproxy/autocert/cache) for
+further details.
+
 # TODO
  - [X] Redirect from HTTP to HTTPS(configurable)
  - [X] HTTPS-only service
