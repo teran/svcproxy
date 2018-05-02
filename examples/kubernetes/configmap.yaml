@@ -96,6 +96,8 @@ data:
         # - dir
         # - redis
         # - sql
+        # More details about configuration at:
+        #   https://github.com/teran/svcproxy/blob/master/autocert/cache/README.md
         backend: sql
         backendOptions:
           # Driver to use by backend
