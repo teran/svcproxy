@@ -10,8 +10,8 @@ Allows to use precaching for realy fast reads and encryption for better security
 Simply wraps [`golang.org/x/crypto/acme/autocert.DirCache`](https://godoc.org/golang.org/x/crypto/acme/autocert#DirCache)
 
 Required options:
- * `path` - path to the directory to store cache. Directory may exists or will be
-   created by svcproxy
+ * `path` - path to the directory to store cache. Directory may exist or will be
+   created by svcproxy automatically.
 
 ## Redis Cache backend
 
