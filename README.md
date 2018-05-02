@@ -178,7 +178,7 @@ Automatic builds are available on DockerHub:
 docker pull teran/svcproxy
 ```
 
-# Authntication
+# Authentication
 ## BasicAuth
 ### htpasswd backend
 
