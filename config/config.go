@@ -65,7 +65,8 @@ type Service struct {
 		ResponseHTTPHeaders map[string]string `yaml:"responseHTTPHeaders"`
 	} `yaml:"frontend"`
 	Backend struct {
-		URL string `yaml:"url"`
+		URL                string            `yaml:"url"`
+		RequestHTTPHeaders map[string]string `yaml:"requestHTTPHeaders" default:"nil"`
 	} `yaml:"backend"`
 	Authentication struct {
 		Method  string            `yaml:"method"`

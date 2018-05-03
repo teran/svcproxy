@@ -75,7 +75,7 @@ func main() {
 				continue
 			}
 
-			b, err := service.NewBackend(sd.Backend.URL)
+			b, err := service.NewBackend(sd.Backend.URL, sd.Backend.RequestHTTPHeaders)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"reason": err,

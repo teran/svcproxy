@@ -29,6 +29,6 @@ type Frontend struct {
 
 // Backend type
 type Backend struct {
-	URL         *url.URL
-	RewriteHost bool
+	URL                *url.URL
+	requestHTTPHeaders map[string]string
 }

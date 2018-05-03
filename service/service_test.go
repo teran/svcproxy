@@ -30,7 +30,7 @@ func (s *ServiceTestSuite) TestService() {
 	f, err := NewFrontend("test.local", "proxy", map[string]string{"X-Blah": "header-value"})
 	s.Require().NoError(err)
 
-	b, err := NewBackend(testsrv.URL)
+	b, err := NewBackend(testsrv.URL, nil)
 	s.Require().NoError(err)
 
 	p, err := NewProxy(f, b, nil, http.DefaultTransport, nil)
@@ -66,7 +66,7 @@ func (s *ServiceTestSuite) TestServiceWithAuthenticator() {
 	f, err := NewFrontend("test.local", "proxy", nil)
 	s.Require().NoError(err)
 
-	b, err := NewBackend(testsrv.URL)
+	b, err := NewBackend(testsrv.URL, nil)
 	s.Require().NoError(err)
 
 	baOptions := map[string]string{
@@ -115,7 +115,7 @@ func (s *ServiceTestSuite) TestRedirect() {
 	f, err := NewFrontend("test.local", "redirect", map[string]string{"X-Blah": "header-value"})
 	s.Require().NoError(err)
 
-	b, err := NewBackend("http://localhost")
+	b, err := NewBackend("http://localhost", nil)
 	s.Require().NoError(err)
 
 	p, err := NewProxy(f, b, nil, http.DefaultTransport, nil)
@@ -134,6 +134,44 @@ func (s *ServiceTestSuite) TestRedirect() {
 	s.Equal(http.StatusFound, result.StatusCode)
 	s.Equal("", result.Header.Get("X-Blah"))
 	s.Equal("https://test.local/blah?getVar=getValue&getVar2=getValue2", result.Header.Get("Location"))
+}
+
+func (s *ServiceTestSuite) TestHeadersPassedToBackend() {
+	testsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.Equal("svcproxy", r.Header.Get("X-Proxy-App"))
+		s.Equal("/blah", r.URL.Path)
+		s.Equal("POST", r.Method)
+		s.Equal("header-value", r.Header.Get("X-Test-Backend-Header"))
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer testsrv.Close()
+
+	svc, err := NewService()
+	s.Require().NoError(err)
+
+	f, err := NewFrontend("test.local", "proxy", nil)
+	s.Require().NoError(err)
+
+	b, err := NewBackend(testsrv.URL, map[string]string{"X-Test-Backend-Header": "header-value"})
+	s.Require().NoError(err)
+
+	p, err := NewProxy(f, b, nil, http.DefaultTransport, nil)
+	s.Require().NoError(err)
+
+	svc.AddProxy(p)
+
+	// Request without authentication
+	r, err := http.NewRequest("POST", "http://test.local/blah", nil)
+	s.Require().NoError(err)
+
+	w := httptest.NewRecorder()
+
+	svc.ServeHTTP(w, r)
+
+	result := w.Result()
+
+	s.Equal(http.StatusNoContent, result.StatusCode)
 }
 
 func TestServiceTestSuite(t *testing.T) {

@@ -33,10 +33,6 @@ func NewReverseProxy(backend *Backend, transport http.RoundTripper) *httputil.Re
 		r.URL.Host = backend.URL.Host
 		r.URL.Path = singleJoiningSlash(backend.URL.Path, r.URL.Path)
 
-		if backend.RewriteHost {
-			r.Host = backend.URL.Host
-		}
-
 		if backend.URL.RawQuery == "" || r.URL.RawQuery == "" {
 			r.URL.RawQuery = backend.URL.RawQuery + r.URL.RawQuery
 		} else {
@@ -52,6 +48,10 @@ func NewReverseProxy(backend *Backend, transport http.RoundTripper) *httputil.Re
 		r.Header.Set("X-Real-IP", remoteIP)
 		r.Header.Set("X-Forwarded-Proto", "https")
 		r.Header.Set("X-Proxy-App", "svcproxy")
+
+		for h, v := range backend.requestHTTPHeaders {
+			r.Header.Set(h, v)
+		}
 	}
 
 	return &httputil.ReverseProxy{

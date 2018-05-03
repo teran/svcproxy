@@ -133,6 +133,9 @@ services:
     backend:
       # Service backend to handle requests behind proxy
       url: http://localhost:8082
+      # Request headers passed to backend
+      requestHTTPHeaders:
+        Host: example.com
     # Authnticator to use for current proxy
     # Currently available:
     # - BasicAuth

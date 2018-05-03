@@ -5,13 +5,14 @@ import (
 )
 
 // NewBackend creates new Backend instance
-func NewBackend(address string) (*Backend, error) {
+func NewBackend(address string, headers map[string]string) (*Backend, error) {
 	backend, err := url.Parse(address)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Backend{
-		URL: backend,
+		URL:                backend,
+		requestHTTPHeaders: headers,
 	}, nil
 }
