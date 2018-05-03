@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ServiceTestSuite struct {
+type ConfigTestSuite struct {
 	suite.Suite
 }
 
-func (s *ServiceTestSuite) TestConfig() {
+func (s *ConfigTestSuite) TestConfig() {
 	configSample, err := ioutil.ReadFile("../examples/config/simple/config.yaml")
 	s.Require().NoError(err)
 
@@ -26,10 +26,10 @@ func (s *ServiceTestSuite) TestConfig() {
 	s.Equal("http://localhost:8082", cfg.Services[0].Backend.URL)
 }
 
-func (s *ServiceTestSuite) SetupTest() {
+func (s *ConfigTestSuite) SetupTest() {
 
 }
 
-func TestServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(ServiceTestSuite))
+func TestConfigTestSuite(t *testing.T) {
+	suite.Run(t, new(ConfigTestSuite))
 }
