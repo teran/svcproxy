@@ -81,11 +81,13 @@ listener:
   middlewares:
     - name: filter
       rules:
-        - ips:
-           - "127.0.0.1"
-           - "::1"
-          userAgents:
-            - "blah (Mozilla 5.0)"
+        - allowFrom:
+          - "127.0.0.1/32"
+          - "::1"
+          denyFrom:
+          - "127.0.0.2/32"
+          denyUserAgents:
+          - "blah (Mozilla 5.0)"
     - name: logging
     - name: metrics
 logger:
@@ -151,6 +153,9 @@ services:
     backend:
       # Service backend to handle requests behind proxy
       url: http://localhost:8082
+      # Request headers passed to backend
+      requestHTTPHeaders:
+        Host: example.com
     # Authnticator to use for current proxy
     # Currently available:
     # - BasicAuth

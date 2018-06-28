@@ -27,7 +27,7 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -40,7 +40,7 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -53,7 +53,7 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips": []interface{}{"127.0.0.1"},
+						"denyFrom": []interface{}{"127.0.0.1/32"},
 					},
 				},
 			},
@@ -66,7 +66,7 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips": []interface{}{"127.0.0.1"},
+						"denyFrom": []interface{}{"127.0.0.1/32"},
 					},
 				},
 			},
@@ -79,8 +79,8 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips":        []interface{}{"127.0.0.1"},
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyFrom":       []interface{}{"127.0.0.1/32"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -93,8 +93,8 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips":        []interface{}{"127.0.0.1"},
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyFrom":       []interface{}{"127.0.0.1/32"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -107,8 +107,8 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips":        []interface{}{"127.0.0.1"},
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyFrom":       []interface{}{"127.0.0.1/32"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -121,8 +121,8 @@ func (s FilterTestSuite) TestAll() {
 				"name": "filter",
 				"rules": []interface{}{
 					map[interface{}]interface{}{
-						"ips":        []interface{}{"127.0.0.1"},
-						"userAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+						"denyFrom":       []interface{}{"127.0.0.1/32"},
+						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},

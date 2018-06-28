@@ -63,11 +63,13 @@ listener:
   middlewares:
     - name: filter
       rules:
-        - ips:
-           - "127.0.0.1"
-           - "::1"
-          userAgents:
-            - "blah (Mozilla 5.0)"
+        - allowFrom:
+          - "127.0.0.1/32"
+          - "::1"
+          denyFrom:
+          - "127.0.0.2/32"
+          denyUserAgents:
+          - "blah (Mozilla 5.0)"
     - name: logging
     - name: metrics
 logger:

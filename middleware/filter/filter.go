@@ -25,9 +25,10 @@ type Options struct {
 
 // Rule type
 type Rule struct {
-	Logic      string
-	IPs        []string
-	UserAgents []*regexp.Regexp
+	Logic          string
+	AllowFrom      []*net.IPNet
+	DenyFrom       []*net.IPNet
+	DenyUserAgents []*regexp.Regexp
 }
 
 // NewMiddleware returns new Middleware instance
@@ -43,16 +44,31 @@ func (f *Filter) SetOptions(options map[string]interface{}) {
 	if ok {
 		for _, x := range r.([]interface{}) {
 			rule := Rule{}
-			ips, ok := x.(map[interface{}]interface{})["ips"]
+			allowFrom, ok := x.(map[interface{}]interface{})["allowFrom"]
 			if ok {
-				var ipList []string
-				for _, i := range ips.([]interface{}) {
-					ipList = append(ipList, i.(string))
+				for _, i := range allowFrom.([]interface{}) {
+					_, ipnet, err := net.ParseCIDR(i.(string))
+					if err != nil {
+						log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
+						continue
+					}
+					rule.AllowFrom = append(rule.AllowFrom, ipnet)
 				}
-				rule.IPs = ipList
 			}
 
-			useragents, ok := x.(map[interface{}]interface{})["userAgents"]
+			denyFrom, ok := x.(map[interface{}]interface{})["denyFrom"]
+			if ok {
+				for _, i := range denyFrom.([]interface{}) {
+					_, ipnet, err := net.ParseCIDR(i.(string))
+					if err != nil {
+						log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
+						continue
+					}
+					rule.DenyFrom = append(rule.DenyFrom, ipnet)
+				}
+			}
+
+			useragents, ok := x.(map[interface{}]interface{})["denyUserAgents"]
 			if ok {
 				var uaList []*regexp.Regexp
 				for _, ua := range useragents.([]interface{}) {
@@ -63,7 +79,7 @@ func (f *Filter) SetOptions(options map[string]interface{}) {
 					}
 					uaList = append(uaList, pattern)
 				}
-				rule.UserAgents = uaList
+				rule.DenyUserAgents = uaList
 			}
 
 			rules = append(rules, rule)
@@ -80,43 +96,58 @@ func (f *Filter) SetOptions(options map[string]interface{}) {
 func (f *Filter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userAgent := r.UserAgent()
-		addr, _, err := net.SplitHostPort(r.RemoteAddr)
+		addrString, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			log.Warnf("Error parsing remote addr: %s", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		addr := net.ParseIP(addrString)
 
-		for _, x := range f.options.Rules {
-			if isIPBlacklisted(addr, x.IPs) {
-				http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
-				return
-			}
-			if isUserAgentBlacklisted(userAgent, x.UserAgents) {
-				http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
-				return
-			}
+		if f.isUserAgentDenied(userAgent) || f.isIPDenied(addr) || !f.isIPAllowed(addr) {
+			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+			return
 		}
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-//
-func isIPBlacklisted(sourceIP string, filterList []string) bool {
-	for _, ip := range filterList {
-		if sourceIP == ip {
-			return true
+func (f *Filter) isUserAgentDenied(userAgent string) bool {
+	for _, rule := range f.options.Rules {
+		for _, ua := range rule.DenyUserAgents {
+			if ua.MatchString(userAgent) {
+				return true
+			}
 		}
 	}
 	return false
 }
 
-func isUserAgentBlacklisted(sourceUserAgent string, userAgentFilterList []*regexp.Regexp) bool {
-	for _, userAgent := range userAgentFilterList {
-		if userAgent.MatchString(sourceUserAgent) {
-			return true
+func (f *Filter) isIPDenied(addr net.IP) bool {
+	for _, rule := range f.options.Rules {
+		for _, ip := range rule.DenyFrom {
+			if ip.Contains(addr) {
+				return true
+			}
 		}
+	}
+	return false
+}
+
+func (f *Filter) isIPAllowed(addr net.IP) bool {
+	var totalRules int
+	for _, rule := range f.options.Rules {
+		for _, ip := range rule.AllowFrom {
+			totalRules++
+			if ip.Contains(addr) {
+				return true
+			}
+		}
+	}
+
+	if totalRules == 0 {
+		return true
 	}
 	return false
 }
