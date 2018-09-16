@@ -54,9 +54,6 @@ func NewCache(db *sql.DB) (*Cache, error) {
 func (m *Cache) Get(ctx context.Context, key string) ([]byte, error) {
 	data, err := m.driver.Get(ctx, key)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, autocert.ErrCacheMiss
-		}
 		return nil, err
 	}
 

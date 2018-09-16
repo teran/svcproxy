@@ -28,6 +28,9 @@ func (m *PostgreSQL) Get(ctx context.Context, key string) ([]byte, error) {
 		LIMIT 1
 	`, key).Scan(&value)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, autocert.ErrCacheMiss
+		}
 		return nil, err
 	}
 
