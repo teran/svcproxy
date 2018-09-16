@@ -3,7 +3,6 @@
 [![Go Report](https://goreportcard.com/badge/github.com/teran/svcproxy)](https://goreportcard.com/report/github.com/teran/svcproxy)
 [![Build Status](https://travis-ci.org/teran/svcproxy.svg?branch=master)](https://travis-ci.org/teran/svcproxy)
 [![License](https://img.shields.io/github/license/teran/svcproxy.svg)](https://github.com/teran/svcproxy/blob/master/LICENSE)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy?ref=badge_shield)
 
 [![Layers size](https://images.microbadger.com/badges/image/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
 [![Recent build commit](https://images.microbadger.com/badges/commit/teran/svcproxy.svg)](https://hub.docker.com/r/teran/svcproxy/)
