@@ -38,6 +38,17 @@ dependencies:
 docker:
 	docker build . -t svcproxy
 
+docker-test-deps:
+	docker run -p3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=true -d mariadb
+	sleep 10
+	mysql -uroot -h127.0.0.1 -e 'CREATE DATABASE svcproxy;'
+
+	docker run -p5432:5432 -d postgres
+	sleep 5
+	psql -Upostgres -h127.0.0.1 -c 'CREATE DATABASE svcproxy;'
+
+	docker run -p6379:6379 -d redis
+
 predependencies:
 	go get -u github.com/golang/dep/cmd/dep
 
