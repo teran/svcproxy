@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -42,7 +43,7 @@ func NewCache(db *sql.DB) (*Cache, error) {
 			return nil, err
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported driver")
+		return nil, errors.New("Unsupported driver")
 	}
 
 	return &Cache{
