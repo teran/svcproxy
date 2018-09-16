@@ -113,7 +113,7 @@ func main() {
 		}
 	}
 
-	cache := initializeCache(cfg.Autocert.Cache.Backend, cfg.Autocert.Cache.BackendOptions)
+	cache := initializeCache(cache.CacheBackend(cfg.Autocert.Cache.Backend), cfg.Autocert.Cache.BackendOptions)
 
 	log.Debug("Loaded proxies for hosts:")
 	for _, host := range hostsList {
@@ -221,7 +221,7 @@ func setLogFormatter(formatter string) {
 	}
 }
 
-func initializeCache(backend string, options map[string]string) autocert.Cache {
+func initializeCache(backend cache.CacheBackend, options map[string]string) autocert.Cache {
 	// Initialize caching subsystem
 	cache, err := cache.NewCacheFactory(backend, options)
 	if err != nil {

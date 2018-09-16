@@ -30,6 +30,21 @@ import (
 
 var _ autocert.Cache = &Cache{}
 
+// CacheBackend type serves to specify cache backend type
+type CacheBackend string
+
+const (
+	// CacheBackendDir specifies autocert's native DirCache caching backend
+	// Which uses local directory for storing certificates
+	CacheBackendDir CacheBackend = "dir"
+
+	// CacheBackendRedis specifies redis caching driver
+	CacheBackendRedis CacheBackend = "redis"
+
+	// CacheBackendSQL specifies database/sql family of caching drivers(MySQL, PostgreSQL, etc.)
+	CacheBackendSQL CacheBackend = "sql"
+)
+
 // Cache struct to store high level cache instance
 type Cache struct {
 	backend       autocert.Cache
@@ -149,7 +164,7 @@ func (c *Cache) encrypt(plaintext []byte) ([]byte, error) {
 }
 
 // NewCacheFactory returns Cache instance
-func NewCacheFactory(backend string, options map[string]string) (autocert.Cache, error) {
+func NewCacheFactory(backend CacheBackend, options map[string]string) (autocert.Cache, error) {
 	var err error
 
 	var usePrecaching bool
@@ -169,17 +184,17 @@ func NewCacheFactory(backend string, options map[string]string) (autocert.Cache,
 
 	var b autocert.Cache
 	switch backend {
-	case "sql":
+	case CacheBackendSQL:
 		b, err = newSQLCacheBackend(options)
 		if err != nil {
 			return nil, err
 		}
-	case "dir":
+	case CacheBackendDir:
 		b, err = newDirCacheBackend(options)
 		if err != nil {
 			return nil, err
 		}
-	case "redis":
+	case CacheBackendRedis:
 		b, err = newRedisCacheBackend(options)
 		if err != nil {
 			return nil, err
