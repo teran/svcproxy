@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/crypto/acme/autocert"
 
 	// MySQL driver
 	_ "github.com/go-sql-driver/mysql"
@@ -36,6 +37,11 @@ func (s *SQLCacheTestSuite) TestMySQLCache() {
 
 	err = c.Delete(context.Background(), "test-data")
 	s.Require().NoError(err)
+
+	data, err = c.Get(context.Background(), "test-data")
+	s.Require().Error(err)
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Require().Nil(data)
 }
 
 func (s *SQLCacheTestSuite) TestPostgreSQLCache() {
@@ -54,6 +60,11 @@ func (s *SQLCacheTestSuite) TestPostgreSQLCache() {
 
 	err = c.Delete(context.Background(), "test-data")
 	s.Require().NoError(err)
+
+	data, err = c.Get(context.Background(), "test-data")
+	s.Require().Error(err)
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Require().Nil(data)
 }
 
 func (s *SQLCacheTestSuite) SetupTest() {

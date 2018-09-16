@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 type RedisCacheTestSuite struct {
@@ -29,6 +30,11 @@ func (s *RedisCacheTestSuite) TestMySQLCache() {
 
 	err = c.Delete(context.Background(), "test-data")
 	s.Require().NoError(err)
+
+	data, err = c.Get(context.Background(), "test-data")
+	s.Require().Error(err)
+	s.Require().Equal(autocert.ErrCacheMiss, err)
+	s.Require().Nil(data)
 }
 
 func (s *RedisCacheTestSuite) SetupTest() {
