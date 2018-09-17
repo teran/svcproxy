@@ -2,7 +2,7 @@ FROM golang
 MAINTAINER Igor Shishkin <me@teran.ru>
 
 ADD . /go/src/github.com/teran/svcproxy
-RUN cd /go/src/github.com/teran/svcproxy && make build-linux-amd64
+RUN cd /go/src/github.com/teran/svcproxy && make dependencies build-linux-amd64
 
 FROM alpine
 MAINTAINER Igor Shishkin <me@teran.ru>
