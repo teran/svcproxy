@@ -16,4 +16,4 @@ before_install:
   - psql -c 'create database svcproxy;' -U postgres
 
 script:
-    - make test build-linux-amd64
+    - make dependencies test build-linux-amd64

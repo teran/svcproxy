@@ -16,6 +16,7 @@
 # Project directories
 bin/*
 pkg/*
+vendor/*
 
 # Temporary add GoogleCloudBuilder configuration files
 cloudbuild.yaml
