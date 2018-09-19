@@ -6,15 +6,17 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/teran/svcproxy/middleware/filter"
+	"github.com/teran/svcproxy/middleware/gzip"
 	"github.com/teran/svcproxy/middleware/logging"
 	"github.com/teran/svcproxy/middleware/metrics"
 	"github.com/teran/svcproxy/middleware/types"
 )
 
 var middlewaresMap = map[string]types.Middleware{
+	"filter":  filter.NewMiddleware(),
+	"gzip":    gzip.NewMiddleware(),
 	"logging": logging.NewMiddleware(),
 	"metrics": metrics.NewMiddleware(),
-	"filter":  filter.NewMiddleware(),
 }
 
 // Chain allows to chain middlewares dynamically
