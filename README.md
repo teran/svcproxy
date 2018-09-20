@@ -89,6 +89,7 @@ listener:
           - "blah (Mozilla 5.0)"
     - name: logging
     - name: metrics
+    - name: gzip
 logger:
   # Log formatter to use. Available options are: text, json
   formatter: text
@@ -235,7 +236,3 @@ further details.
  - [X] Authentication(?)
  - [X] Autocert cache for Redis or Mongo (?)
  - [ ] Tracing(?)
-
-
-## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fteran%2Fsvcproxy?ref=badge_large)

@@ -72,6 +72,7 @@ listener:
           - "blah (Mozilla 5.0)"
     - name: logging
     - name: metrics
+    - name: gzip
 logger:
   # Log formatter to use. Available options are: text, json
   formatter: text
