@@ -73,6 +73,7 @@ listener:
     - name: logging
     - name: metrics
     - name: gzip
+      level: 4
 logger:
   # Log formatter to use. Available options are: text, json
   formatter: text
