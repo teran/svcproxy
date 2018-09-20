@@ -49,7 +49,7 @@ func (s *GZipMiddlewareSuite) TestGZipMiddleware() {
 	s.Require().Equal(handlerContent, string(uncompressedBody))
 }
 
-func (s *GZipMiddlewareSuite) STestGZipMiddlewareNoEncoding() {
+func (s *GZipMiddlewareSuite) TestGZipMiddlewareNoEncoding() {
 	g := NewMiddleware()
 
 	w := httptest.NewRecorder()
