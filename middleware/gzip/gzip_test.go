@@ -39,6 +39,7 @@ func (s *GZipMiddlewareSuite) TestGZipMiddleware() {
 
 	result := w.Result()
 	s.Require().Equal("gzip", result.Header.Get("Content-Encoding"))
+	s.Require().Equal("", result.Header.Get("Content-Length"))
 
 	gzreader, err := gzip.NewReader(result.Body)
 	s.Require().NoError(err)
