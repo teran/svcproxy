@@ -58,6 +58,7 @@ func (g *Gzip) Middleware(next http.Handler) http.Handler {
 		}
 
 		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
 
 		gz, err := gzip.NewWriterLevel(w, g.Level)
 		if err != nil {
