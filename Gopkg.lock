@@ -50,12 +50,12 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:4868df29afe0468bd98f663aff34f486b2e92db41f25747d8e6855c9cd91808b"
+  digest = "1:5b33a8ff87888677489ba612c8aa1bf06500b087f1397a4732b7a0298f6d5f8a"
   name = "github.com/gobuffalo/envy"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f3b98d4da2fa434517f47f615e217fa72ff2c51e"
-  version = "v1.6.12"
+  revision = "fa0dfdc10b5366ce365b7d9d1755a03e4e797bc5"
+  version = "v1.6.15"
 
 [[projects]]
   branch = "master"
@@ -66,12 +66,12 @@
   revision = "eca3b8fd66872a76119b189bbe0f58f776a2a39f"
 
 [[projects]]
-  digest = "1:47c913f1b6469759fd0e8c6822d638346d170de20422bf5db3de842486756e32"
+  digest = "1:1acdddeab03e03a64d08b5ebcd47f3da4e8e8abeaf7cac664646c4407cb34137"
   name = "github.com/gobuffalo/packr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "679459352e18b4c74274a979d695fe13b68730c1"
-  version = "v1.21.9"
+  revision = "d93b0e17023e6fa58f86d547bdc551837df1daa8"
+  version = "v2.0.1"
 
 [[projects]]
   branch = "master"
@@ -115,14 +115,6 @@
   pruneopts = "UT"
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
   version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:6e2ed1bdbf1d14b4d0be58bcd3f1c3000c1e226964354457b8e6ca69e83a1cbb"
-  name = "github.com/markbates/oncer"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "bf2de49a0be218916e69a11d22866e6cd0a560f2"
 
 [[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
@@ -182,7 +174,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5833c61ebbd625a6bad8e5a1ada2b3e13710cf3272046953a2c8915340fe60a3"
+  digest = "1:f0bb332b39488b057a8671557f307997426e5c650ee738a634a0697a41e207c5"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
@@ -191,7 +183,7 @@
     "xfs",
   ]
   pruneopts = "UT"
-  revision = "316cf8ccfec56d206735d46333ca162eb374da8b"
+  revision = "f8d8b3f739bd91a7c0462cb55235ef63c79c9abc"
 
 [[projects]]
   digest = "1:e09ada96a5a41deda4748b1659cc8953961799e798aea557257b56baee4ecaf3"
@@ -202,19 +194,19 @@
     "semver",
   ]
   pruneopts = "UT"
-  revision = "68d1cb014f030acd0f10ac553801e43c0e5da629"
-  version = "v1.1.0"
+  revision = "2ea7272aa4c7de5c8a568dff504404e8dc49945d"
+  version = "v1.2.1"
 
 [[projects]]
   branch = "master"
-  digest = "1:adddeca6a627f69b0c34971dfc13292f334352d43ba0b9b121434ff92a2d04c1"
+  digest = "1:fe478ff1dfc3878c0e2f4ca9b765d5c47df6539b7797a02472153357f48a4797"
   name = "github.com/rubenv/sql-migrate"
   packages = [
     ".",
     "sqlparse",
   ]
   pruneopts = "UT"
-  revision = "5a8808c14925f69d2228981db113f672ad047e69"
+  revision = "1007f53448d75fe14190968f5de4d95ed63ebb83"
 
 [[projects]]
   digest = "1:87c2e02fb01c27060ccc5ba7c5a407cc91147726f8f40b70cceeedbc52b1f3a8"
@@ -249,18 +241,18 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "b01c7a72566457eb1420261cdafef86638fc3861"
+  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
 
 [[projects]]
   branch = "master"
-  digest = "1:7941e2f16c0833b438cbef7fccfe4f8346f9f7876b42b29717a75d7e8c4800cb"
+  digest = "1:8975c6b66d95adc1cd08820aba7ad6b60b165725a401c4177c0eaa866170bb10"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "aca44879d5644da7c5b8ec6a1115e9b6ea6c40d9"
+  revision = "3b5209105503162ded1863c307ac66fec31120dd"
 
 [[projects]]
   digest = "1:c25289f43ac4a68d88b02245742347c94f1e108c534dda442188015ff80669b3"
