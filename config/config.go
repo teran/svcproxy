@@ -17,35 +17,44 @@ type Config struct {
 	Autocert Autocert  `yaml:"autocert"`
 }
 
+// AutocertCache configuration
+type AutocertCache struct {
+	Backend        string            `yaml:"backend"`
+	BackendOptions map[string]string `yaml:"backendOptions"`
+}
+
 // Autocert configuration
 type Autocert struct {
-	Email        string `yaml:"email"`
-	DirectoryURL string `yaml:"directoryURL" default:"https://acme-v01.api.letsencrypt.org/directory"`
-	Cache        struct {
-		Backend        string            `yaml:"backend"`
-		BackendOptions map[string]string `yaml:"backendOptions"`
-	} `yaml:"cache"`
+	Email        string        `yaml:"email"`
+	DirectoryURL string        `yaml:"directoryURL" default:"https://acme-v01.api.letsencrypt.org/directory"`
+	Cache        AutocertCache `yaml:"cache"`
+}
+
+// ListenerBackend configuration
+type ListenerBackend struct {
+	DualStack             bool          `yaml:"dualStack" default:"true"`
+	Timeout               time.Duration `yaml:"timeout" default:"10s"`
+	KeepAlive             time.Duration `yaml:"keepAlive" default:"30s"`
+	ExpectContinueTimeout time.Duration `yaml:"expectContinueTimeout" default:"5s"`
+	IdleConnTimeout       time.Duration `yaml:"idleConnTimeout" default:"10s"`
+	MaxIdleConns          int           `yaml:"maxIdleConns" default:"100"`
+	ResponseHeaderTimeout time.Duration `yaml:"responseHeaderTimeout" default:"10s"`
+	TLSHandshakeTimeout   time.Duration `yaml:"tlsHandshakeTimeout" default:"3s"`
+}
+
+// ListenerFrontend configuration
+type ListenerFrontend struct {
+	IdleTimeout       time.Duration `yaml:"idleTimeout" default:"5s"`
+	ReadHeaderTimeout time.Duration `yaml:"readHeaderTimeout" default:"3s"`
+	ReadTimeout       time.Duration `yaml:"readTimeout" default:"10s"`
+	WriteTimeout      time.Duration `yaml:"writeTimeout" default:"10s"`
 }
 
 // Listener section of the configuration
 type Listener struct {
-	Backend struct {
-		DualStack             bool          `yaml:"dualStack" default:"true"`
-		Timeout               time.Duration `yaml:"timeout" default:"10s"`
-		KeepAlive             time.Duration `yaml:"keepAlive" default:"30s"`
-		ExpectContinueTimeout time.Duration `yaml:"expectContinueTimeout" default:"5s"`
-		IdleConnTimeout       time.Duration `yaml:"idleConnTimeout" default:"10s"`
-		MaxIdleConns          int           `yaml:"maxIdleConns" default:"100"`
-		ResponseHeaderTimeout time.Duration `yaml:"responseHeaderTimeout" default:"10s"`
-		TLSHandshakeTimeout   time.Duration `yaml:"tlsHandshakeTimeout" default:"3s"`
-	} `yaml:"backend"`
-	DebugAddr string `yaml:"debugAddr" default:"8081"`
-	Frontend  struct {
-		IdleTimeout       time.Duration `yaml:"idleTimeout" default:"5s"`
-		ReadHeaderTimeout time.Duration `yaml:"readHeaderTimeout" default:"3s"`
-		ReadTimeout       time.Duration `yaml:"readTimeout" default:"10s"`
-		WriteTimeout      time.Duration `yaml:"writeTimeout" default:"10s"`
-	} `yaml:"frontend"`
+	Backend     ListenerBackend          `yaml:"backend"`
+	DebugAddr   string                   `yaml:"debugAddr" default:"8081"`
+	Frontend    ListenerFrontend         `yaml:"frontend"`
 	HTTPAddr    string                   `yaml:"httpAddr" default:":80"`
 	HTTPSAddr   string                   `yaml:"httpsAddr" default:":443"`
 	Middlewares []map[string]interface{} `yaml:"middlewares"`
@@ -57,21 +66,30 @@ type Logger struct {
 	Level     string `yaml:"level" default:"debug"`
 }
 
+// ServiceFrontend configuration
+type ServiceFrontend struct {
+	FQDN                []string          `yaml:"fqdn"`
+	HTTPHandler         string            `yaml:"httpHandler"`
+	ResponseHTTPHeaders map[string]string `yaml:"responseHTTPHeaders"`
+}
+
+// ServiceBackend configuration
+type ServiceBackend struct {
+	URL                string            `yaml:"url"`
+	RequestHTTPHeaders map[string]string `yaml:"requestHTTPHeaders" default:"nil"`
+}
+
+// ServiceAuthentication configuration
+type ServiceAuthentication struct {
+	Method  string            `yaml:"method"`
+	Options map[string]string `yaml:"options"`
+}
+
 // Service section of the configuration
 type Service struct {
-	Frontend struct {
-		FQDN                []string          `yaml:"fqdn"`
-		HTTPHandler         string            `yaml:"httpHandler"`
-		ResponseHTTPHeaders map[string]string `yaml:"responseHTTPHeaders"`
-	} `yaml:"frontend"`
-	Backend struct {
-		URL                string            `yaml:"url"`
-		RequestHTTPHeaders map[string]string `yaml:"requestHTTPHeaders" default:"nil"`
-	} `yaml:"backend"`
-	Authentication struct {
-		Method  string            `yaml:"method"`
-		Options map[string]string `yaml:"options"`
-	} `yaml:"authentication"`
+	Frontend       ServiceFrontend       `yaml:"frontend"`
+	Backend        ServiceBackend        `yaml:"backend"`
+	Authentication ServiceAuthentication `yaml:"authentication"`
 }
 
 // Load reads YAML configuration file and returns Config

@@ -26,10 +26,6 @@ func (s *ConfigTestSuite) TestConfig() {
 	s.Equal("http://localhost:8082", cfg.Services[0].Backend.URL)
 }
 
-func (s *ConfigTestSuite) SetupTest() {
-
-}
-
 func TestConfigTestSuite(t *testing.T) {
 	suite.Run(t, new(ConfigTestSuite))
 }
