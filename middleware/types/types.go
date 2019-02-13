@@ -4,6 +4,11 @@ import "net/http"
 
 // Middleware interface
 type Middleware interface {
-	SetOptions(map[string]interface{})
+	SetConfig(MiddlewareConfig) error
 	Middleware(next http.Handler) http.Handler
+}
+
+// MiddlewareConfig interface
+type MiddlewareConfig interface {
+	Unpack(map[string]interface{}) error
 }

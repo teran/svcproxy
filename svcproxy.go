@@ -144,10 +144,15 @@ func main() {
 		}).Fatal("Error listening Debug HTTP socket")
 	}()
 
+	httpHandler, err := middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...)
+	if err != nil {
+		log.Fatalf("error initializing middleware chain for HTTP: %s", err)
+	}
+
 	// Run http listeners
 	httpSvc := &http.Server{
 		Addr:              cfg.Listener.HTTPAddr,
-		Handler:           middleware.Chain(acm.HTTPHandler(svc), cfg.Listener.Middlewares...),
+		Handler:           httpHandler,
 		IdleTimeout:       cfg.Listener.Frontend.IdleTimeout,
 		ReadHeaderTimeout: cfg.Listener.Frontend.ReadHeaderTimeout,
 		ReadTimeout:       cfg.Listener.Frontend.ReadTimeout,
@@ -188,10 +193,15 @@ func main() {
 		PreferServerCipherSuites: true,
 	}
 
+	httpsHandler, err := middleware.Chain(svc, cfg.Listener.Middlewares...)
+	if err != nil {
+		log.Fatalf("error initializing middleware chain for HTTPS: %s", err)
+	}
+
 	// Run HTTPS listener
 	httpsSvc := &http.Server{
 		Addr:              cfg.Listener.HTTPSAddr,
-		Handler:           middleware.Chain(svc, cfg.Listener.Middlewares...),
+		Handler:           httpsHandler,
 		TLSConfig:         tlsconf,
 		IdleTimeout:       cfg.Listener.Frontend.IdleTimeout,
 		ReadHeaderTimeout: cfg.Listener.Frontend.ReadHeaderTimeout,

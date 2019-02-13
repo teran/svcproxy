@@ -14,6 +14,7 @@ type FilterTestSuite struct {
 
 type testCase struct {
 	options        map[string]interface{}
+	config         *Config
 	caseIPAddr     string
 	caseUAString   string
 	expectedStatus int
@@ -25,9 +26,9 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -38,9 +39,9 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -51,9 +52,9 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom": []interface{}{"127.0.0.1/32"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom": []string{"127.0.0.1/32"},
 					},
 				},
 			},
@@ -64,9 +65,9 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom": []interface{}{"127.0.0.1/32"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom": []string{"127.0.0.1/32"},
 					},
 				},
 			},
@@ -77,10 +78,10 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom":       []interface{}{"127.0.0.1/32"},
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom":       []string{"127.0.0.1/32"},
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -91,10 +92,10 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom":       []interface{}{"127.0.0.1/32"},
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom":       []string{"127.0.0.1/32"},
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -105,10 +106,10 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom":       []interface{}{"127.0.0.1/32"},
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom":       []string{"127.0.0.1/32"},
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -119,10 +120,10 @@ func (s FilterTestSuite) TestAll() {
 		{
 			options: map[string]interface{}{
 				"name": "filter",
-				"rules": []interface{}{
-					map[interface{}]interface{}{
-						"denyFrom":       []interface{}{"127.0.0.1/32"},
-						"denyUserAgents": []interface{}{"blah ([0-9]+.[0-9]+)"},
+				"rules": InputRuleSet{
+					InputRule{
+						"denyFrom":       []string{"127.0.0.1/32"},
+						"denyUserAgents": []string{"blah ([0-9]+.[0-9]+)"},
 					},
 				},
 			},
@@ -137,8 +138,10 @@ func (s FilterTestSuite) TestAll() {
 	})
 
 	for _, c := range tcs {
-		f := NewMiddleware()
-		f.SetOptions(c.options)
+		f := NewMiddleware().(*Filter)
+		cfg := &Config{}
+		cfg.Unpack(c.options)
+		f.SetConfig(cfg)
 
 		w := httptest.NewRecorder()
 		r, err := http.NewRequest("GET", "/", nil)

@@ -21,14 +21,32 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+type GzipConfig struct {
+	Level int
+}
+
+func (mc *GzipConfig) Unpack(options map[string]interface{}) error {
+	lvl, ok := options["level"].(int)
+	if ok {
+		mc.Level = lvl
+		return nil
+	}
+	mc.Level = 1
+	return nil
+}
+
 // Gzip middleware type
 type Gzip struct {
 	Level int
 }
 
 // NewMiddleware returns new Gzip middleware instance
-func NewMiddleware() *Gzip {
+func NewMiddleware() types.Middleware {
 	return &Gzip{}
+}
+
+func (f *Gzip) SetConfig(types.MiddlewareConfig) error {
+	return nil
 }
 
 // SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)

@@ -46,7 +46,7 @@ func (rw *ResponseWriterWithStatus) Write(b []byte) (int, error) {
 }
 
 // NewMiddleware returns new Middleware instance
-func NewMiddleware() *Metrics {
+func NewMiddleware() types.Middleware {
 	m := Metrics{}
 
 	m.inFlightRequests = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -106,6 +106,10 @@ func NewMiddleware() *Metrics {
 	prometheus.MustRegister(m.responseSizeBytes)
 
 	return &m
+}
+
+func (f *Metrics) SetConfig(types.MiddlewareConfig) error {
+	return nil
 }
 
 // SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)

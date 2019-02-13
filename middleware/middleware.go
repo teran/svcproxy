@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -12,32 +13,55 @@ import (
 	"github.com/teran/svcproxy/middleware/types"
 )
 
-var middlewaresMap = map[string]types.Middleware{
-	"filter":  filter.NewMiddleware(),
-	"gzip":    gzip.NewMiddleware(),
-	"logging": logging.NewMiddleware(),
-	"metrics": metrics.NewMiddleware(),
+type middlewareDefinition struct {
+	middleware func() types.Middleware
+	config     types.MiddlewareConfig
+}
+
+var middlewaresMap = map[string]middlewareDefinition{
+	"filter": middlewareDefinition{
+		middleware: filter.NewMiddleware,
+		config:     &filter.Config{},
+	},
+	"gzip": middlewareDefinition{
+		middleware: gzip.NewMiddleware,
+		config:     &gzip.GzipConfig{},
+	},
+	"logging": middlewareDefinition{
+		middleware: logging.NewMiddleware,
+	},
+	"metrics": middlewareDefinition{
+		middleware: metrics.NewMiddleware,
+	},
 }
 
 // Chain allows to chain middlewares dynamically
-func Chain(f http.Handler, ms ...map[string]interface{}) http.Handler {
+func Chain(f http.Handler, ms ...map[string]interface{}) (http.Handler, error) {
 	for _, m := range ms {
 		name, ok := m["name"]
 		if !ok {
-			log.Fatalf("Missed name field in middleware map: %+v", m)
+			return nil, fmt.Errorf("Missed name field in middleware map: %+v", m)
 		}
 
-		fm, ok := middlewaresMap[name.(string)]
+		md, ok := middlewaresMap[name.(string)]
 		if !ok {
-			log.Fatalf("Middleware '%s' is requested but not registered.", name.(string))
+			return nil, fmt.Errorf("middleware `%s` is requested but not registered", name.(string))
 		}
 		log.WithFields(log.Fields{
 			"middleware": name,
 		}).Debugf("Middleware initialized")
 
-		fm.SetOptions(m)
-		f = fm.Middleware(f)
+		mdlwr := md.middleware()
+		if md.config != nil {
+			err := md.config.Unpack(m)
+			if err != nil {
+				return nil, err
+			}
+
+			mdlwr.SetConfig(md.config)
+		}
+		f = mdlwr.Middleware(f)
 	}
 
-	return f
+	return f, nil
 }

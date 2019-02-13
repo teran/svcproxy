@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"regexp"
@@ -11,16 +12,85 @@ import (
 
 var _ types.Middleware = (*Filter)(nil)
 
-// Filter middleware type
-type Filter struct {
-	options *Options
-}
+// InputRuleSet type
+type InputRuleSet = []InputRule
 
-// Options type to care about filter middleware options without
-// using inerface{} types
-type Options struct {
+// InputRule type
+type InputRule = map[string][]string
+
+// Config type
+type Config struct {
 	Name  string
 	Rules []Rule
+}
+
+// Unpack unpacks input configuration
+func (fc *Config) Unpack(options map[string]interface{}) error {
+	var rules []Rule
+
+	r, ok := options["rules"]
+	if !ok {
+		log.Printf("no rules defined. Skipping configuration")
+		return nil
+	}
+
+	rulesInput, ok := r.(InputRuleSet)
+	if !ok {
+		return errors.New("improper configuration: input rule set doesn't look so. Should be []map[string][]string")
+	}
+
+	for _, x := range rulesInput {
+		rule := Rule{}
+		allowFrom, ok := x["allowFrom"]
+		if ok {
+			for _, i := range allowFrom {
+				_, ipnet, err := net.ParseCIDR(i)
+				if err != nil {
+					log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
+					continue
+				}
+				rule.AllowFrom = append(rule.AllowFrom, ipnet)
+			}
+		}
+
+		denyFrom, ok := x["denyFrom"]
+		if ok {
+			for _, i := range denyFrom {
+				_, ipnet, err := net.ParseCIDR(i)
+				if err != nil {
+					log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
+					continue
+				}
+				rule.DenyFrom = append(rule.DenyFrom, ipnet)
+			}
+		}
+
+		useragents, ok := x["denyUserAgents"]
+		if ok {
+			var uaList []*regexp.Regexp
+			for _, ua := range useragents {
+				uaStr := ua
+				pattern, err := regexp.Compile(uaStr)
+				if err != nil {
+					log.Fatalf("Error compiling regexp: %s", uaStr)
+				}
+				uaList = append(uaList, pattern)
+			}
+			rule.DenyUserAgents = uaList
+		}
+
+		rules = append(rules, rule)
+	}
+
+	fc.Name = options["name"].(string)
+	fc.Rules = rules
+
+	return nil
+}
+
+// Filter middleware type
+type Filter struct {
+	config *Config
 }
 
 // Rule type
@@ -32,64 +102,18 @@ type Rule struct {
 }
 
 // NewMiddleware returns new Middleware instance
-func NewMiddleware() *Filter {
+func NewMiddleware() types.Middleware {
 	return &Filter{}
 }
 
-// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
-func (f *Filter) SetOptions(options map[string]interface{}) {
-	var rules []Rule
-
-	r, ok := options["rules"]
-	if ok {
-		for _, x := range r.([]interface{}) {
-			rule := Rule{}
-			allowFrom, ok := x.(map[interface{}]interface{})["allowFrom"]
-			if ok {
-				for _, i := range allowFrom.([]interface{}) {
-					_, ipnet, err := net.ParseCIDR(i.(string))
-					if err != nil {
-						log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
-						continue
-					}
-					rule.AllowFrom = append(rule.AllowFrom, ipnet)
-				}
-			}
-
-			denyFrom, ok := x.(map[interface{}]interface{})["denyFrom"]
-			if ok {
-				for _, i := range denyFrom.([]interface{}) {
-					_, ipnet, err := net.ParseCIDR(i.(string))
-					if err != nil {
-						log.Printf("Error parsing CIDR: %s. Rule skipped.", err)
-						continue
-					}
-					rule.DenyFrom = append(rule.DenyFrom, ipnet)
-				}
-			}
-
-			useragents, ok := x.(map[interface{}]interface{})["denyUserAgents"]
-			if ok {
-				var uaList []*regexp.Regexp
-				for _, ua := range useragents.([]interface{}) {
-					uaStr := ua.(string)
-					pattern, err := regexp.Compile(uaStr)
-					if err != nil {
-						log.Fatalf("Error compiling regexp: %s", uaStr)
-					}
-					uaList = append(uaList, pattern)
-				}
-				rule.DenyUserAgents = uaList
-			}
-
-			rules = append(rules, rule)
-		}
+// SetConfig applies config to the middleware
+func (f *Filter) SetConfig(c types.MiddlewareConfig) error {
+	var ok bool
+	f.config, ok = c.(*Config)
+	if !ok {
+		return errors.New("the map passed doesn't implement FilterConfig")
 	}
-
-	f.options = &Options{
-		Name:  options["name"].(string),
-		Rules: rules,
-	}
+	return nil
 }
 
 // Middleware implements middleware filter middleware
@@ -114,7 +138,7 @@ func (f *Filter) Middleware(next http.Handler) http.Handler {
 }
 
 func (f *Filter) isUserAgentDenied(userAgent string) bool {
-	for _, rule := range f.options.Rules {
+	for _, rule := range f.config.Rules {
 		for _, ua := range rule.DenyUserAgents {
 			if ua.MatchString(userAgent) {
 				return true
@@ -125,7 +149,7 @@ func (f *Filter) isUserAgentDenied(userAgent string) bool {
 }
 
 func (f *Filter) isIPDenied(addr net.IP) bool {
-	for _, rule := range f.options.Rules {
+	for _, rule := range f.config.Rules {
 		for _, ip := range rule.DenyFrom {
 			if ip.Contains(addr) {
 				return true
@@ -137,7 +161,7 @@ func (f *Filter) isIPDenied(addr net.IP) bool {
 
 func (f *Filter) isIPAllowed(addr net.IP) bool {
 	var totalRules int
-	for _, rule := range f.options.Rules {
+	for _, rule := range f.config.Rules {
 		for _, ip := range rule.AllowFrom {
 			totalRules++
 			if ip.Contains(addr) {

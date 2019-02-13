@@ -16,8 +16,12 @@ var _ types.Middleware = (*Logging)(nil)
 type Logging struct{}
 
 // NewMiddleware returns new Middleware instance
-func NewMiddleware() *Logging {
+func NewMiddleware() types.Middleware {
 	return &Logging{}
+}
+
+func (f *Logging) SetConfig(types.MiddlewareConfig) error {
+	return nil
 }
 
 // SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
