@@ -20,12 +20,10 @@ func NewMiddleware() types.Middleware {
 	return &Logging{}
 }
 
+// SetConfig applies config to the middleware
 func (f *Logging) SetConfig(types.MiddlewareConfig) error {
 	return nil
 }
-
-// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
-func (l *Logging) SetOptions(_ map[string]interface{}) {}
 
 // Middleware wraps Handler to log it's request/response metrics
 // such as response HTTP status, payload length, time spent.

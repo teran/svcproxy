@@ -108,12 +108,10 @@ func NewMiddleware() types.Middleware {
 	return &m
 }
 
+// SetConfig applies config to the middleware
 func (f *Metrics) SetConfig(types.MiddlewareConfig) error {
 	return nil
 }
-
-// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
-func (m *Metrics) SetOptions(_ map[string]interface{}) {}
 
 // Middleware wraps Handler to obtain metrics
 func (m *Metrics) Middleware(next http.Handler) http.Handler {
