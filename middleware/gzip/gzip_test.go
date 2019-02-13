@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type GZipMiddlewareSuite struct {
+type GZipMiddlewareTestSuite struct {
 	suite.Suite
 }
 
@@ -25,51 +25,71 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, handlerContent)
 }
 
-func (s *GZipMiddlewareSuite) TestGZipMiddleware() {
-	g := NewMiddleware()
-
-	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/", nil)
-	s.Require().NoError(err)
-
-	req.Header.Set("Accept-Encoding", "gzip")
-
-	testsrv := &testHandler{}
-	g.Middleware(testsrv).ServeHTTP(w, req)
-
-	result := w.Result()
-	s.Require().Equal("gzip", result.Header.Get("Content-Encoding"))
-	s.Require().Equal("", result.Header.Get("Content-Length"))
-
-	gzreader, err := gzip.NewReader(result.Body)
-	s.Require().NoError(err)
-	defer result.Body.Close()
-
-	uncompressedBody, err := ioutil.ReadAll(gzreader)
-	s.Require().NoError(err)
-	s.Require().Equal(handlerContent, string(uncompressedBody))
+type testCase struct {
+	level                    int
+	acceptEncoding           string
+	expContentEncodingHeader string
+	expContentLengthHeader   string
+	expErrorOnSetConfig      bool
 }
 
-func (s *GZipMiddlewareSuite) TestGZipMiddlewareNoEncoding() {
-	g := NewMiddleware()
+func (s *GZipMiddlewareTestSuite) TestAll() {
+	tcs := func() []testCase {
+		tt := []testCase{}
+		for i := 0; i <= 9; i++ {
+			tt = append(tt, testCase{
+				level:                    i,
+				acceptEncoding:           "gzip",
+				expContentEncodingHeader: "gzip",
+				expContentLengthHeader:   "",
+				expErrorOnSetConfig: func(i int) bool {
+					if 0 <= i && i <= 9 {
+						return false
+					}
+					return true
+				}(i),
+			})
+		}
 
-	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/", nil)
-	s.Require().NoError(err)
+		return tt
+	}()
 
-	testsrv := &testHandler{}
-	g.Middleware(testsrv).ServeHTTP(w, req)
+	for _, tc := range tcs {
+		g := NewMiddleware()
+		err := g.SetConfig(&GzipConfig{
+			Level: tc.level,
+		})
+		if tc.expErrorOnSetConfig {
+			s.Require().Error(err)
+		} else {
+			s.Require().NoError(err)
+		}
 
-	result := w.Result()
-	s.Require().Equal("", result.Header.Get("Content-Encoding"))
+		s.Require().Equal(tc.level, g.(*Gzip).Level)
 
-	uncompressedBody, err := ioutil.ReadAll(result.Body)
-	defer result.Body.Close()
+		w := httptest.NewRecorder()
+		req, err := http.NewRequest("GET", "/", nil)
+		s.Require().NoError(err)
 
-	s.Require().NoError(err)
-	s.Require().Equal(handlerContent, string(uncompressedBody))
+		req.Header.Set("Accept-Encoding", tc.acceptEncoding)
+
+		testsrv := &testHandler{}
+		g.Middleware(testsrv).ServeHTTP(w, req)
+
+		result := w.Result()
+		s.Require().Equal(tc.expContentEncodingHeader, result.Header.Get("Content-Encoding"))
+		s.Require().Equal(tc.expContentLengthHeader, result.Header.Get("Content-Length"))
+
+		gzreader, err := gzip.NewReader(result.Body)
+		s.Require().NoError(err)
+		defer result.Body.Close()
+
+		uncompressedBody, err := ioutil.ReadAll(gzreader)
+		s.Require().NoError(err)
+		s.Require().Equal(handlerContent, string(uncompressedBody))
+	}
 }
 
-func TestGZipMiddlewareSuite(t *testing.T) {
-	suite.Run(t, &GZipMiddlewareSuite{})
+func TestGZipMiddlewareTestSuite(t *testing.T) {
+	suite.Run(t, &GZipMiddlewareTestSuite{})
 }

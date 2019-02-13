@@ -2,6 +2,8 @@ package gzip
 
 import (
 	"compress/gzip"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -21,18 +23,19 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// GzipConfig type
 type GzipConfig struct {
 	Level int
 }
 
+// Unpack implemnts types.MiddlewareConfig interface
 func (mc *GzipConfig) Unpack(options map[string]interface{}) error {
 	lvl, ok := options["level"].(int)
 	if ok {
 		mc.Level = lvl
 		return nil
 	}
-	mc.Level = 1
-	return nil
+	return errors.New("gzip compression level must be defined")
 }
 
 // Gzip middleware type
@@ -45,26 +48,16 @@ func NewMiddleware() types.Middleware {
 	return &Gzip{}
 }
 
-func (f *Gzip) SetConfig(types.MiddlewareConfig) error {
-	return nil
-}
-
-// SetOptions sets passed options for middleware at startup time(i.e. Chaining procedure)
-func (g *Gzip) SetOptions(opts map[string]interface{}) {
-	levelField, ok := opts["level"]
-	if ok {
-		level, ok := levelField.(int)
-		if !ok {
-			log.Fatal("gzip middleware: error verifying gzip level: probably wrong type, must be integer")
-		}
-
-		if level < gzip.HuffmanOnly || level > gzip.BestCompression {
-			log.Fatalf("gzip middleware: invalid compression level: %d. Must be between %d and %d", level, gzip.HuffmanOnly, gzip.BestCompression)
-		}
-
-		g.Level = level
+// SetConfig applies config to the middleware
+func (g *Gzip) SetConfig(opts types.MiddlewareConfig) error {
+	o := opts.(*GzipConfig)
+	if o.Level < gzip.HuffmanOnly || o.Level > gzip.BestCompression {
+		return fmt.Errorf("gzip middleware: invalid compression level: %d. Must be between %d and %d", o.Level, gzip.HuffmanOnly, gzip.BestCompression)
 	}
-	g.Level = gzip.DefaultCompression
+
+	g.Level = o.Level
+
+	return nil
 }
 
 // Middleware wraps handler into GZIP content encoding
