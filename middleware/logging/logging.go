@@ -10,7 +10,7 @@ import (
 	"github.com/teran/svcproxy/middleware/types"
 )
 
-var _ types.Middleware = &Logging{}
+var _ types.Middleware = (*Logging)(nil)
 
 // Logging middleware type
 type Logging struct{}

@@ -9,7 +9,7 @@ import (
 	"github.com/teran/svcproxy/middleware/types"
 )
 
-var _ types.Middleware = &Filter{}
+var _ types.Middleware = (*Filter)(nil)
 
 // Filter middleware type
 type Filter struct {

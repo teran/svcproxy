@@ -10,7 +10,7 @@ import (
 	"github.com/teran/svcproxy/middleware/types"
 )
 
-var _ types.Middleware = &Gzip{}
+var _ types.Middleware = (*Gzip)(nil)
 
 type gzipResponseWriter struct {
 	io.Writer

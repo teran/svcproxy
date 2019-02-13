@@ -10,7 +10,7 @@ import (
 	"github.com/teran/svcproxy/middleware/types"
 )
 
-var _ types.Middleware = &Metrics{}
+var _ types.Middleware = (*Metrics)(nil)
 
 // Metrics type
 type Metrics struct {
