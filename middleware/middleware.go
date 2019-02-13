@@ -58,7 +58,10 @@ func Chain(f http.Handler, ms ...map[string]interface{}) (http.Handler, error) {
 				return nil, err
 			}
 
-			mdlwr.SetConfig(md.config)
+			err = mdlwr.SetConfig(md.config)
+			if err != nil {
+				return nil, err
+			}
 		}
 		f = mdlwr.Middleware(f)
 	}
