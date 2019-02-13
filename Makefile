@@ -52,6 +52,7 @@ docker-test-deps:
 
 predependencies:
 	go get -u github.com/golang/dep/cmd/dep
+	go get -u github.com/rakyll/gotest
 
 sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-darwin-amd64.sig 				bin/svcproxy-darwin-amd64
@@ -62,7 +63,7 @@ sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/svcproxy-windows-i386.exe.sig 		bin/svcproxy-windows-i386.exe
 
 test:
-	GOCACHE=off go test -race -v ./...
+	GOCACHE=off gotest -race -v ./...
 
 benchmark:
 	cd ./autocert/cache && go test -bench=. -cpu=1,2,3,4
