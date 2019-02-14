@@ -14,24 +14,24 @@ import (
 )
 
 type middlewareDefinition struct {
-	middleware func() types.Middleware
+	middleware types.Middleware
 	config     types.MiddlewareConfig
 }
 
 var middlewaresMap = map[string]middlewareDefinition{
 	"filter": middlewareDefinition{
-		middleware: filter.NewMiddleware,
+		middleware: filter.NewMiddleware(),
 		config:     &filter.Config{},
 	},
 	"gzip": middlewareDefinition{
-		middleware: gzip.NewMiddleware,
+		middleware: gzip.NewMiddleware(),
 		config:     &gzip.GzipConfig{},
 	},
 	"logging": middlewareDefinition{
-		middleware: logging.NewMiddleware,
+		middleware: logging.NewMiddleware(),
 	},
 	"metrics": middlewareDefinition{
-		middleware: metrics.NewMiddleware,
+		middleware: metrics.NewMiddleware(),
 	},
 }
 
@@ -51,19 +51,18 @@ func Chain(f http.Handler, ms ...map[string]interface{}) (http.Handler, error) {
 			"middleware": name,
 		}).Debugf("Middleware initialized")
 
-		mdlwr := md.middleware()
 		if md.config != nil {
 			err := md.config.Unpack(m)
 			if err != nil {
 				return nil, err
 			}
 
-			err = mdlwr.SetConfig(md.config)
+			err = md.middleware.SetConfig(md.config)
 			if err != nil {
 				return nil, err
 			}
 		}
-		f = mdlwr.Middleware(f)
+		f = md.middleware.Middleware(f)
 	}
 
 	return f, nil
