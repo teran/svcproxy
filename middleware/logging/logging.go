@@ -63,6 +63,8 @@ func (l *Logging) Middleware(next http.Handler) http.Handler {
 // ResponseWriterWithStatus implements adding status code to ResponseWriter object
 type ResponseWriterWithStatus struct {
 	http.ResponseWriter
+	http.Hijacker
+
 	Status int
 }
 
