@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"bufio"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -66,6 +68,15 @@ type ResponseWriterWithStatus struct {
 	http.Hijacker
 
 	Status int
+}
+
+// Hijack implements http.Hijacker
+func (rw *ResponseWriterWithStatus) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hj, ok := rw.ResponseWriter.(http.Hijacker)
+	if ok {
+		return hj.Hijack()
+	}
+	return nil, nil, fmt.Errorf("Hijacker is not implemented in underlying ResponseWriter")
 }
 
 // WriteHeader reimplements WriteHeader() to fill status automatically
